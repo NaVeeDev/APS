@@ -1,0 +1,28 @@
+.
+├── bin
+│   ├── dune
+│   ├── main.ml             tests des fichiers individuellement
+│   └── test_aps.ml         tests 'automatiques' de plusieurs fichiers
+├── examples                exemples de programmes du langage APS
+│   └── APS0                
+│       ├── prog0.aps
+│       ├── prog1.aps
+│       ├── prog2.aps
+│       ├── prog3.aps
+│       └── prog4.aps
+├── lib
+│   ├── Parsing             
+│   │   ├── dune
+│   │   ├── lexer.mll       définition des tokens de APS0 (analyse lexicale)
+│   │   └── parser.mly      définition des règles de parsing et lien avec l'AST
+│   ├── Utils               Répertoire contenant des utilitaires pour le projet
+│   |   ├── manip_sys.ml    Manipulation des fichiers, utilisation de commandes
+│   |   └── pretty.ml       Utilitaires pour l'affichage avec formats**
+│   ├── dune
+│   ├── ast.ml              Définition de la syntaxe abstraite de APS**
+│   ├── prologTerm.ml       Interprète visant à produire un terme prolog correspondant aux règles de typage
+│   └── typing_rules.pl     Définition en Prolog de règles de typage pour APS**
+├── dune-project
+├── architecture.md
+└── setup_projet.md
+

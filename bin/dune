@@ -1,0 +1,9 @@
+(executable
+ (public_name aps)
+ (name main)
+ (libraries aps_syntax))
+
+(executable
+ (public_name tests)
+  (name test_aps)
+  (libraries aps_syntax))

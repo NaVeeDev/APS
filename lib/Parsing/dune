@@ -1,0 +1,2 @@
+(menhir   (modules parser) (flags -v))
+(ocamllex (modules lexer))

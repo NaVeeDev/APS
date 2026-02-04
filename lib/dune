@@ -1,0 +1,5 @@
+(library
+ (name aps_syntax)
+ (libraries bos))
+
+(include_subdirs unqualified)
