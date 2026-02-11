@@ -19,6 +19,7 @@ let rec pp_expr fmt e =
     | ASTNum n -> fprintf fmt "num(%d)" n
     | ASTId x -> fprintf fmt "ident(%s)" x
     | ASTApp(e, es) -> fprintf fmt "app(%a,[%a])" pp_expr  e  pp_exprs es
+    | _ -> failwith "TODO"
 and pp_exprs fmt es = pp_lst_cma pp_expr fmt es
 
 let pp_stat fmt s =
@@ -26,8 +27,8 @@ let pp_stat fmt s =
   ASTEcho e -> fprintf fmt "echo(%a)" pp_expr e
 let pp_cmd fmt c =
   match c with
-  ASTStat s ->
-    fprintf fmt "stat(%a)" pp_stat s
+  ASTStat s -> fprintf fmt "stat(%a)" pp_stat s
+  | _ -> failwith "TODO"
 let pp_cmds fmt cmds =
   match cmds with
   c :: [] -> pp_cmd fmt c

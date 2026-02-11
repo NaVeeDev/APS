@@ -15,12 +15,15 @@ open Ast
 %token <string> IDENT
 %token LPAR RPAR 
 %token LBRA RBRA
+%token SEMI COLON COMMA STAR ARROW
+%token CONST FUN REC
 %token ECHO
+%token IF AND OR BOOL INT
 
 %type <Ast.expr> expr
 %type <Ast.expr list> exprs
-%type <Ast.cmd list> cmds
-%type <Ast.cmd list> prog
+%type <Ast.cmds list> cmds
+%type <Ast.cmds list> prog
 
 %start prog
 
@@ -30,7 +33,31 @@ prog: LBRA cmds RBRA    { $2 }
 
 cmds:
   stat                  { [ASTStat $1] }
+| def SEMI cmds         { ASTDef $1 :: $3 }
 ;
+
+def:
+  CONST IDENT typee expr { ASTConst($2, $3, $4) }
+| FUN IDENT typee LBRA args RBRA expr { ASTFun($2, $3, $5, $7) }
+| FUN REC IDENT typee LBRA args RBRA expr { ASTFunRec($3, $4, $6, $8) }
+
+typee:
+  INT                   { ASTInt }
+| BOOL                  { ASTBool }
+| LPAR types ARROW typee RPAR { ASTArrow($2, $4) }
+;
+
+types:
+  typee                   { [$1] }
+| typee STAR types        { $1::$3 }
+;
+
+args:
+  arg                   { [$1] }
+| arg COMMA args        { $1::$3 }
+
+arg:
+  IDENT COLON typee      { ($1, $3) }
 
 stat:
   ECHO expr             { ASTEcho($2) }
@@ -39,7 +66,11 @@ stat:
 expr:
   NUM                   { ASTNum($1) }
 | IDENT                 { ASTId($1) }
+| LPAR IF expr expr expr RPAR { ASTIf($3, $4, $5) }
+| LPAR AND expr expr RPAR { ASTAnd($3, $4) }
+| LPAR OR expr expr RPAR { ASTOr($3, $4) }
 | LPAR expr exprs RPAR  { ASTApp($2, $3) }
+| LBRA args RBRA expr   { ASTAbs($2, $4) }
 ;
 
 exprs :

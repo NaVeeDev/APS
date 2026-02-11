@@ -12,12 +12,30 @@
 type expr =
     ASTNum of int
   | ASTId of string
-  | ASTApp of expr * expr list
+  | ASTIf of expr * expr * expr 
+  | ASTAnd of expr * expr
+  | ASTOr of expr * expr
+  | ASTApp of expr * expr list  
+  | ASTAbs of (string * typee) list * expr
 
-type stat =
+and stat =
     ASTEcho of expr
 
-type cmd =
+and cmds =
     ASTStat of stat
+  | ASTDef of def
+
+and def =
+    ASTConst of string * typee * expr
+  | ASTFun of string * typee * (string * typee) list * expr
+  | ASTFunRec of string * typee * (string * typee) list * expr
+
+and typee =
+    ASTInt
+  | ASTBool
+  | ASTArrow of typee list * typee
+
+
+
 
 

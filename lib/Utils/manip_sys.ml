@@ -11,7 +11,7 @@ let cmd_typ pl_term =
     run_io (Cmd.(v "swipl" % "-g" % "main" % "-t" %"halt" % typ_path)) |>
     out_string)
 
-let get_prog (fname : string) : Ast.cmd list =
+let get_prog (fname : string) : Ast.cmds list =
   let ic = open_in fname in
   try
     let lexbuf = Lexing.from_channel ic in
