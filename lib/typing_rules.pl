@@ -25,6 +25,9 @@ type_check(Env, prog(Cs), void) :- type_check(Env, Cs, void).
 % ===== SUITE DE COMMANDES =====
 % defs
 type_check(Env, [D|Cs], void) :- type_check(Env, D, Envv), type_check(Envv, Cs, void).
+% empty def 
+type_check(_, [], void).
+
 
 % end
 type_check(Env, stat(S), void) :- type_check(Env, S, void).
@@ -86,8 +89,17 @@ type_check(Env, abs(Args, E), ArrowType) :-
 % \+ = not en prolog
 
 % args_to_arrowtype : converti une liste d'args en fonction
-args_to_arrowtype([], T, T).
-args_to_arrowtype([(_, ArgType) | Args], T, arrow(ArgType, ArrowType)) :- args_to_arrowtype(Args, T, ArrowType).
+args_to_arrowtype(Args, T, arrow(Stars, T)) :-
+    args_to_types(Args, Types),
+    types_to_star(Types, Stars).
+
+% args_to_types : extraire les types des args
+args_to_types([], []).
+args_to_types([(_, ArgType) | Args], [ArgType | Rest]) :- args_to_types(Args, Rest).
+
+% types_to_star : construire un star imbrique
+types_to_star([T], T).
+types_to_star([T1, T2 | Rest], star(T1, StarRest)) :- types_to_star([T2 | Rest], StarRest).
 
 % add_args_to_env : ajoute les args a l'env
 add_args_to_env([], Env, Env).
@@ -98,13 +110,9 @@ check_args(_, [], []).
 check_args(Env, [E|Es], [T|Ts]) :- type_check(Env, E, T), check_args(Env, Es, Ts).
 
 % arrowtype_to_args converti une fonction en une liste d'args et type de retour
-funtype_to_args_res(arrow(Arg, Ret), [Arg], Ret) :- \+ is_star(Arg).
-funtype_to_args_res(arrow(star(T1, T2), Ret), Args, Ret) :-
-    flatten_star(star(T1, T2), Args).
+funtype_to_args_res(arrow(Arg, Ret), Args, Ret) :-
+    flatten_star(Arg, Args).
 
 % flatten_star : pour obtenir les types d'un star
 flatten_star(star(T1, T2), [T1|Rest]) :- flatten_star(T2, Rest).
-flatten_star(T, [T]) :- \+ T = star(_,_).
-
-% star : return true si c'est star
-is_star(star(_, _)).
+flatten_star(T, [T]).
