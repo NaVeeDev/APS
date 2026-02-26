@@ -13,7 +13,7 @@ let print_prog () =
     let s = Format.flush_str_formatter () in
     Format.printf "==== Test du pretty printer de termes ====\n %s" s ;
     Format.printf "==== Test du typage du programme ====\n" ;
-    (match cmd_typ  s with
+    (match cmd_typ s with
     | Ok(s,_) -> (Format.printf "%s\n" s;
                   if s = "OK" then (
                   Format.printf "==== Test de la sémantique du programme ====\n" ;

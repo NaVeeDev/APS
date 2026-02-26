@@ -33,9 +33,23 @@ let test_semantic (l_test : string list) =
 List.fold_right
 (fun fname _ ->
   let p = get_prog fname in
-      Format.printf "%s |\t %a\n" fname pp_prog p ;
-      Format.printf "Résultat de l'évaluation : " ;
-      eval_prog p) l_test ()
+  Format.printf "%s |\t" fname ;
+      pp_prog Format.str_formatter p;
+      let s = Format.flush_str_formatter () in
+      match cmd_typ s with
+      | Ok(res,_) -> 
+          if String.trim res = "OK" then (
+            Format.printf " -> Résultat de l'évaluation : " ;
+            (try 
+              eval_prog p;
+              print_newline ()
+            with e -> Format.printf "Erreur : %s\n\n" (Printexc.to_string e))
+          ) else (
+            Format.printf " -> Skipping evaluation (Typer KO)\n\n"
+          );
+      | Error (`Msg m) -> print_endline m ;
+      print_newline ();
+      ) l_test ()
 
 let _ =
   Format.printf "========== Tests de APS 0 ==========\n";
@@ -43,6 +57,7 @@ let _ =
   test_prologTerm (fst (List.split l_test_0 ));
   print_endline "- Test du typeur\n";
   test_typeur l_test_0;
+  print_newline ();
   print_endline "- Test de la sémantique\n";
   test_semantic (fst (List.split l_test_0 ))
 
