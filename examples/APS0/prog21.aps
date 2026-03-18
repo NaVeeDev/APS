@@ -1,0 +1,2 @@
+[ FUN f bool [x:int] (add x 1);
+  ECHO (f 2) ]

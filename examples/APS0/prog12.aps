@@ -1,0 +1,2 @@
+[ FUN REC f int [x:int] (if x 42 (f (not x)));
+  ECHO (f false)]

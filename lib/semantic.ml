@@ -34,7 +34,7 @@ let prim2 name arg1 arg2 =
               | (InZ n1, InZ n2) -> InZ (n1 * n2)
               | _ -> failwith "Arguments de mul doivent être des entiers")
   | "div" -> (match (arg1, arg2) with
-              | (InZ _, InZ 0) -> failwith "Division par zéro"
+              | (InZ _, InZ 0) -> failwith "Division par zero"
               | (InZ n1, InZ n2) -> InZ (n1 / n2)
               | _ -> failwith "Arguments de div doivent être des entiers")
   | _ -> failwith ("Primitive inconnue : " ^ name)
@@ -94,9 +94,9 @@ and eval_stat s env stack =
 
 and eval_def d env =
   match d with
-  | ASTConst (x, _, e) -> Hashtbl.add env x (eval_expr e env); env
-  | ASTFun (f, _, args, e) -> Hashtbl.add env f (InF(e, List.map (fst) args, env)); env
-  | ASTFunRec (fr, _ , args, e) -> Hashtbl.add env fr (InFR(e, fr, List.map (fst) args, env)); env
+  | ASTConst (x, _, e) -> Hashtbl.add env x (eval_expr e (Hashtbl.copy env)); env
+  | ASTFun (f, _, args, e) -> Hashtbl.add env f (InF(e, List.map (fst) args, (Hashtbl.copy env))); env
+  | ASTFunRec (fr, _ , args, e) -> Hashtbl.add env fr (InFR(e, fr, List.map (fst) args, (Hashtbl.copy env))); env
 
 and eval_expr e env =
   match e with
@@ -175,8 +175,8 @@ and eval_expr e env =
                                    | _ -> failwith "Expression appliquée n'est pas une fonction (APP)"))
 
 
-and eval_typee t _ =
+and eval_typee t =
   match t with
   | ASTInt -> "int"
   | ASTBool -> "bool"
-  | ASTArrow (_, _) -> failwith "TODO: eval_typee - type de fonction" (* A COMPLETER *)
+  | ASTArrow (t1, t2) -> List.fold_left (fun acc t -> acc ^ " -> " ^ eval_typee t) "" t1 ^ " -> " ^ eval_typee t2
