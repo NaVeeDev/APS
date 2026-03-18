@@ -16,8 +16,8 @@ open Ast
 %token LPAR RPAR 
 %token LBRA RBRA
 %token SEMI COLON COMMA STAR ARROW
-%token CONST FUN REC
-%token ECHO
+%token CONST FUN REC VAR PROC
+%token ECHO SET IFi WHILE CALL
 %token IF AND OR BOOL INT
 
 %type <Ast.expr> expr
@@ -28,18 +28,25 @@ open Ast
 %start prog
 
 %%
-prog: LBRA cmds RBRA    { $2 }
+prog: block             { $1 }
+;
+
+block: LBRA cmds RBRA   { $2 }
 ;
 
 cmds:
   stat                  { [ASTStat $1] }
 | def SEMI cmds         { ASTDef $1 :: $3 }
+| stat SEMI cmds        { ASTStat $1 :: $3 }
 ;
 
 def:
   CONST IDENT typee expr { ASTConst($2, $3, $4) }
 | FUN IDENT typee LBRA args RBRA expr { ASTFun($2, $3, $5, $7) }
 | FUN REC IDENT typee LBRA args RBRA expr { ASTFunRec($3, $4, $6, $8) }
+| VAR IDENT typee       { ASTVar($2, $3) }
+| PROC IDENT LBRA args RBRA block { ASTProc($2, $4, $6) }
+| PROC REC IDENT LBRA args RBRA block { ASTProcRec($3, $5, $7) }
 
 typee:
   INT                   { ASTInt }
@@ -61,6 +68,10 @@ arg:
 
 stat:
   ECHO expr             { ASTEcho($2) }
+| SET IDENT expr        { ASTSet($2, $3) }
+| IFi expr block block  { ASTIfi($2, $3, $4) }
+| WHILE expr block      { ASTWhile($2, $3) }
+| CALL IDENT exprs      { ASTCall($2, $3) }
 ;
 
 expr:
