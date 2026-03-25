@@ -20,6 +20,10 @@ type expr =
 
 and stat =
     ASTEcho of expr
+  | ASTSet of string * expr
+  | ASTIfi of expr * cmds list * cmds list
+  | ASTWhile of expr * cmds list
+  | ASTCall of string * expr list
 
 and cmds =
     ASTStat of stat
@@ -29,6 +33,9 @@ and def =
     ASTConst of string * typee * expr
   | ASTFun of string * typee * (string * typee) list * expr
   | ASTFunRec of string * typee * (string * typee) list * expr
+  | ASTVar of string * typee
+  | ASTProc of string * (string * typee) list * cmds list
+  | ASTProcRec of string * (string * typee) list * cmds list
 
 and typee =
     ASTInt

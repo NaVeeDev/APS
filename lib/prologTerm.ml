@@ -43,10 +43,17 @@ let pp_def fmt d =
     ASTConst(x, t, e) -> fprintf fmt "const(%s,%a,%a)" x pp_typee t pp_expr e
     | ASTFun(x, t, args, e) -> fprintf fmt "fun(%s, %a, [%a], %a)" x pp_typee t (pp_lst_cma pp_arg) args pp_expr e
     | ASTFunRec(x, t, args,e) -> fprintf fmt "funrec(%s, %a, [%a], %a)" x pp_typee t (pp_lst_cma pp_arg) args pp_expr e
+    | ASTVar(x, t) -> fprintf fmt "var(%s, %a)" x pp_typee t
+    | ASTProc(x, args, cs) -> fprintf fmt "proc(%s, [%a], [%a])" x (pp_lst_cma pp_arg) args pp_cmds cs
+    | ASTProcRec(x, args, cs) -> fprintf fmt "procrec(%s, [%a], [%a])" x (pp_lst_cma pp_arg) args pp_cmds cs
 
 let pp_stat fmt s =
   match s with
   ASTEcho e -> fprintf fmt "echo(%a)" pp_expr e
+  | ASTSet (x, e) -> fprintf fmt "set(%s, %a)"  x pp expr e
+  | ASTIfi (e, cs1, cs2) -> fprintf fmt "ifi(%a, [%a], [%a])" pp_expr e pp_cmds cd1 pp_cmds cd2
+  | ASTWhile (e, cs) -> fprintf fmt "while(%a, [%a])" pp_expr e pp_cmds cs
+  | ASTCall (f, es) -> fprintf fmt "call(%s, [%a])" f pp_exprs es
 let pp_cmd fmt c =
   match c with
   ASTStat s -> fprintf fmt "stat(%a)" pp_stat s

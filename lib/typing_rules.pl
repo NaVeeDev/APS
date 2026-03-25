@@ -22,15 +22,19 @@ env0([
 % prog
 type_check(Env, prog(Cs), void) :- type_check(Env, Cs, void).
 
+% ===== BLOCS =====
+type_check(Env, [Cs], void) :- type_check(Env, Cs, void).
+
+
 % ===== SUITE DE COMMANDES =====
 % defs
 type_check(Env, [D|Cs], void) :- type_check(Env, D, Envv), type_check(Envv, Cs, void).
-% empty def 
-type_check(_, [], void).
 
+% stats
+type_check(Env, [stat(S)|Cs], void) :- type_check(Env, S, void). type_check(Env, Cs, void).
 
 % end
-type_check(Env, stat(S), void) :- type_check(Env, S, void).
+type_check(_, [], void).
 
 % ===== DEFINITIONS =====
 % const
@@ -48,11 +52,46 @@ type_check(Env, funrec(X, T, Args, E), [(X, ArrowType)|Env]) :-
     add_args_to_env(Args, [(X, ArrowType)|Env], NewEnv),
     type_check(NewEnv, E, T).
 
+% var
+type_check(Env, var(X, int), [(X, int)|Env]).
+type_check(Env, var(X, bool), [(X, bool)|Env]).
+
+% proc
+type_check(Env, proc(X, Args, Cs), [(X, ProcType)|Env]) :- 
+    add_args_to_env(Args, Env, NewEnv),
+    type_check(NewEnv, Cs, void),
+    args_to_arrowtype(Args, void, ProcType).
+
+% procrec
+type_check(Env, procrec(X, Args, Cs), [(X, ProcType)|Env]) :- 
+    args_to_arrowtype(Args, void, ProcType),
+    add_args_to_env(Args, [(X, ProcType)|Env], NewEnv),
+    type_check(NewEnv, Cs, void).
+
 
 % ===== INSTRUCTION =====
 % echo
 type_check(Env, echo(X), void) :- type_check(Env, X, int).
 
+% set
+type_check(Env, set(X, E), void) :- member((X,T), Env), type_check(Env, E, T).
+
+% ifi
+type_check(Env, ifi(E, Cs1, Cs2), void) :- 
+    type_check(Env, E, bool),
+    type_check(Env, Cs1, void),
+    type_check(Env, Cs2, void).
+
+% while
+type_check(Env, while(E, Cs), void) :- 
+    type_check(Env, E, bool),
+    type_check(Env, Cs, void).
+
+% call
+type_check(Env, call(X, Args), void) :-
+    member((X, ProcType), Env),
+    funtype_to_args_res(ProcType, ArgsTypes, void),
+    check_args(Env, Args, ArgsTypes).
 
 % ===== EXPRESSIONS =====
 % num
