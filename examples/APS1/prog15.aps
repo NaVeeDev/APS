@@ -1,0 +1,2 @@
+[FUN f int [x:int] x;
+ CALL f 5]

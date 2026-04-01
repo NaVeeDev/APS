@@ -1,0 +1,6 @@
+[VAR total int; 
+ SET total 0;
+ FUN double int [x:int] (mul x 2);
+ PROC ajoute [v:int] [SET total (add total v)];
+ CALL ajoute (double 5);
+ ECHO total]

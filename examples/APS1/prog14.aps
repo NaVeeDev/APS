@@ -1,0 +1,1 @@
+[IF 5 [ECHO 1] [ECHO 0]]

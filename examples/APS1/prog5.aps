@@ -1,0 +1,3 @@
+[VAR x int;
+ SET x 5;
+ IF (lt x 10) [ECHO x] [ECHO 0]]

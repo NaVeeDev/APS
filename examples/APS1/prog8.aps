@@ -1,0 +1,3 @@
+[VAR x int;
+ SET x 10;
+ WHILE (lt x 5) [ECHO x]]

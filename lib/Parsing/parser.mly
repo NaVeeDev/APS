@@ -24,6 +24,13 @@ open Ast
 %type <Ast.expr list> exprs
 %type <Ast.cmds list> cmds
 %type <Ast.cmds list> prog
+%type <Ast.cmds list> block
+%type <Ast.def> def
+%type <Ast.stat> stat
+%type <Ast.typee> typee
+%type <Ast.typee list> types
+%type <string * Ast.typee> arg
+%type <(string * Ast.typee) list> args
 
 %start prog
 

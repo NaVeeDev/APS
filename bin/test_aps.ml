@@ -12,7 +12,17 @@ let l_test_0 = [(testfile_name 0 0, "OK"); (testfile_name 0 1, "KO");
                 (testfile_name 0 14, "OK");(testfile_name 0 15, "OK");
                 (testfile_name 0 16, "OK");(testfile_name 0 17, "OK");
                 (testfile_name 0 18, "KO");(testfile_name 0 19, "KO");
-                (testfile_name 0 20, "KO");(testfile_name 0 21, "KO")]
+                (testfile_name 0 20, "KO");(testfile_name 0 21, "KO");
+                (testfile_name 0 22, "OK")]
+
+let l_test_1 = [(testfile_name 1 0, "OK"); (testfile_name 1 1, "OK");
+                (testfile_name 1 2, "OK"); (testfile_name 1 3, "OK");
+                (testfile_name 1 4, "OK"); (testfile_name 1 5, "OK");
+                (testfile_name 1 6, "OK"); (testfile_name 1 7, "OK");
+                (testfile_name 1 8, "OK"); (testfile_name 1 9, "OK");
+                (testfile_name 1 10, "OK");(testfile_name 1 11, "OK");
+                (testfile_name 1 12, "OK");(testfile_name 1 13, "KO");
+                (testfile_name 1 14, "KO");(testfile_name 1 15, "KO")]
 
 
 
@@ -66,5 +76,14 @@ let _ =
   test_typeur l_test_0;
   print_newline ();
   print_endline "- Test de la sémantique\n";
-  test_semantic (fst (List.split l_test_0 ))
+  test_semantic (fst (List.split l_test_0 ));
+
+  Format.printf "========== Tests de APS 1 ==========\n";
+  Format.printf "- Test de PrologTerm\n";
+  test_prologTerm (fst (List.split l_test_1 ));
+  print_endline "- Test du typeur\n";
+  test_typeur l_test_1;
+  print_newline ();
+  print_endline "- Test de la sémantique\n";
+  test_semantic (fst (List.split l_test_1 ))
 

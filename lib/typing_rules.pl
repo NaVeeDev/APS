@@ -31,7 +31,7 @@ type_check(Env, [Cs], void) :- type_check(Env, Cs, void).
 type_check(Env, [D|Cs], void) :- type_check(Env, D, Envv), type_check(Envv, Cs, void).
 
 % stats
-type_check(Env, [stat(S)|Cs], void) :- type_check(Env, S, void). type_check(Env, Cs, void).
+type_check(Env, [stat(S)|Cs], void) :- type_check(Env, S, void), type_check(Env, Cs, void).
 
 % end
 type_check(_, [], void).
@@ -91,7 +91,7 @@ type_check(Env, while(E, Cs), void) :-
 type_check(Env, call(X, Args), void) :-
     member((X, ProcType), Env),
     funtype_to_args_res(ProcType, ArgsTypes, void),
-    check_args(Env, Args, ArgsTypes).
+    check_args(Env, Args, ArgsTypes). 
 
 % ===== EXPRESSIONS =====
 % num

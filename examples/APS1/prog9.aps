@@ -1,0 +1,4 @@
+[VAR x int; 
+ PROC affiche [x:int] [ECHO x]; 
+ SET x 42; 
+ CALL affiche x] 

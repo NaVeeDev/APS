@@ -1,0 +1,10 @@
+[VAR compteur int; 
+ SET compteur 0;
+ PROC REC compte [n:int] 
+   [IF (lt 0 n) 
+      [SET compteur (add compteur 1); 
+       CALL compte (sub n 1)] 
+      [ECHO 0]
+    ]; 
+ CALL compte 5; 
+ ECHO compteur]

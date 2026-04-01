@@ -1,0 +1,4 @@
+[CONST c int 10;
+ VAR x int;
+ SET x c; 
+ ECHO x]

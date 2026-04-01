@@ -1,0 +1,4 @@
+[VAR x int; 
+ PROC setX [v:int] [SET x v]; 
+ CALL setX 10; 
+ ECHO x]
