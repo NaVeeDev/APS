@@ -1,0 +1,10 @@
+[VAR resultat int;
+ SET resultat 1;
+ VAR n int;
+ SET n 5;
+ PROC REC facto [var r : int, m:int]
+   [IF (lt m 2)
+      [ECHO r]
+      [SET r (mul r m);
+       CALL facto (adr r) (sub m 1)]];
+ CALL facto (adr resultat) n]

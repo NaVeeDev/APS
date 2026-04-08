@@ -3,6 +3,8 @@ open Bos
 
 let testfile_name ver i = Printf.sprintf "examples/APS%d/prog%d.aps" ver i
 
+let testfile_name_1a i = Printf.sprintf "examples/APS1a/prog%d.aps" i
+
 let typ_path = "lib/typing_rules.pl"
 
 let cmd_typ pl_term =

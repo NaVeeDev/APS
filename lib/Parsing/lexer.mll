@@ -37,6 +37,8 @@ rule token = parse
   | "or"             { OR }
   | "bool"           { BOOL }
   | "int"            { INT }
+  | "var"            { VARP }
+  | "adr"            { ADR }
   | ['0'-'9']+('.'['0'-'9'])? as lxm { NUM(int_of_string lxm) }
-  | ['a'-'z']['a'-'z''A'-'Z''0'-'9']* as lxm { IDENT(lxm) }
+  | ['a'-'z']['a'-'z''A'-'Z''0'-'9''_']* as lxm { IDENT(lxm) }
   | eof              { raise Eof }

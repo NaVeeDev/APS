@@ -7,23 +7,31 @@
 (* == Fichier: ast.ml                                                      == *)
 (* ==  Arbre de syntaxe abstraite                                          == *)
 (* ========================================================================== *)
+type argp = 
+    ASTArg of string * typee
+  | ASTVarp of string * typee
 
+and arg = string * typee
 
-type expr =
+and exprp = 
+    ASTExpr of expr
+  | ASTAdr of string (* not sure for string?? *)
+
+and expr =
     ASTNum of int
   | ASTId of string
   | ASTIf of expr * expr * expr 
   | ASTAnd of expr * expr
   | ASTOr of expr * expr
   | ASTApp of expr * expr list  
-  | ASTAbs of (string * typee) list * expr
+  | ASTAbs of arg list * expr
 
 and stat =
     ASTEcho of expr
   | ASTSet of string * expr
   | ASTIfi of expr * cmds list * cmds list
   | ASTWhile of expr * cmds list
-  | ASTCall of string * expr list
+  | ASTCall of string * exprp list
 
 and cmds =
     ASTStat of stat
@@ -31,11 +39,11 @@ and cmds =
 
 and def =
     ASTConst of string * typee * expr
-  | ASTFun of string * typee * (string * typee) list * expr
-  | ASTFunRec of string * typee * (string * typee) list * expr
+  | ASTFun of string * typee * arg list * expr
+  | ASTFunRec of string * typee * arg list * expr
   | ASTVar of string * typee
-  | ASTProc of string * (string * typee) list * cmds list
-  | ASTProcRec of string * (string * typee) list * cmds list
+  | ASTProc of string * argp list * cmds list
+  | ASTProcRec of string * argp list * cmds list
 
 and typee =
     ASTInt

@@ -7,7 +7,7 @@ type values =
   | InFR of expr * string * string list * (string, values) Hashtbl.t
   | InA of int
   | InP of cmds list * string list * (string, values) Hashtbl.t
-  | InPR of cmds list * string * string list * (string, values) Hashtbl.t
+  | InPR of cmds list * string list * (string, values) Hashtbl.t
   
 
 (* ==== PRIMITIVES ==== *)
@@ -98,10 +98,10 @@ and eval_cmd env mem stack c =
 
 and eval_stat env mem stack s =
   match s with
-  | ASTSet(x,e) -> (match Hashtbl.find env x with
+  | ASTSet(x,e) ->  (try (match Hashtbl.find env x with
                     | InA a -> let v = eval_expr env mem e in
                                 Hashtbl.replace mem a v; (env, mem, stack)
-                    | _ -> failwith ("Variable " ^ x ^ " n'est pas assignable"))
+                    | _ -> failwith ("Variable " ^ x ^ " n'est pas assignable")) with Not_found -> failwith ("Variable non définie : " ^ x))
   | ASTIfi (e, then_block, else_block) -> (match eval_expr env mem e with
                                            | InZ 1 -> eval_block env mem stack then_block
                                            | InZ 0 -> eval_block env mem stack else_block
@@ -111,17 +111,20 @@ and eval_stat env mem stack s =
                            | InZ 1 -> let (new_env, new_mem, new_stack) = eval_block env mem stack body in
                                       eval_stat new_env new_mem new_stack (ASTWhile (e, body))
                            | _ -> failwith "Condition d'un while doit être 0 ou 1 (While)")
-  | ASTCall (f, args) -> (match Hashtbl.find env f with
-                          | InP (cmds, params, env') -> let values = List.map (fun arg -> eval_expr env mem arg) args in
+  | ASTCall (f, args) -> (try (match Hashtbl.find env f with
+                          | InP (cmds, params, env') -> let values = List.map (fun arg -> eval_exprp env mem arg) args in
                                                         let new_env = Hashtbl.copy env' in
                                                         List.iter2 (fun param value -> Hashtbl.add new_env param value) params values;
-                                                        eval_block new_env mem stack cmds
-                          | InPR (cmds, f', params, env') -> let values = List.map (fun arg -> eval_expr env mem arg) args in
-                                                             let new_env = Hashtbl.copy env' in
-                                                             List.iter2 (fun param value -> Hashtbl.add new_env param value) params values;
-                                                             Hashtbl.add new_env f' (InPR(cmds, f', params, env'));
-                                                             eval_block new_env mem stack cmds
-                          | _ -> failwith ("Proc " ^ f ^ " n'est pas défini"))
+                                                        let (_, _, _) = eval_block new_env mem stack cmds in
+                                                        (env, mem, stack)
+
+                          | InPR (cmds, params, env') -> let values = List.map (fun arg -> eval_exprp env mem arg) args in
+                                                         let new_env = Hashtbl.copy env' in
+                                                         List.iter2 (fun param value -> Hashtbl.add new_env param value) params values;
+                                                         Hashtbl.add new_env f (InPR(cmds, params, env'));
+                                                         let (_, _, _) = eval_block new_env mem stack cmds in
+                                                         (env, mem, stack)
+                          | _ -> failwith (f ^ " n'est pas une procédure")) with Not_found -> failwith (f ^" n'est pas défini"))
   | ASTEcho e -> match eval_expr env mem e with
                    | InZ n -> (env, mem, n :: stack)
                    | _ -> failwith "Echo d'une valeur non entière"
@@ -134,19 +137,24 @@ and eval_def env (mem : (int, values) t) stack d =
   | ASTVar (x,_) -> let (a, sigma') = alloc mem in 
                     Hashtbl.add env x (InA (a));
                     (env, sigma', stack)
-  | ASTProc (p, args, cmds) -> Hashtbl.add env p (InP(cmds, List.map (fst) args, (Hashtbl.copy env))); (env, mem, stack)
-  | ASTProcRec (pr, args, cmds) -> Hashtbl.add env pr (InPR(cmds, pr, List.map (fst) args, (Hashtbl.copy env))); (env, mem, stack)
+  | ASTProc (p, args, cmds) -> let params = List.map (function ASTArg(x,_) -> x | ASTVarp(x,_) -> x) args in Hashtbl.add env p (InP(cmds, params, (Hashtbl.copy env))); (env, mem, stack)
+  | ASTProcRec (pr, args, cmds) -> let params = List.map (function ASTArg(x,_) -> x | ASTVarp(x,_) -> x) args in Hashtbl.add env pr (InPR(cmds, params, (Hashtbl.copy env))); (env, mem, stack)
 
-
+and eval_exprp env mem e =
+  match e with
+  | ASTExpr e' -> eval_expr env mem e'
+  | ASTAdr x -> try (match Hashtbl.find env x with
+                | InA a -> InA a
+                | _ -> failwith ("Variable " ^ x ^ " n'est pas une adresse")) with Not_found -> failwith ("Variable non définie : " ^ x)
 and eval_expr env mem e =
   match e with
   (* (NUM) *)
   | ASTNum n -> InZ n
 
   (* (ID) *)
-  | ASTId x -> (match (try find env x with Not_found -> failwith ("Variable non définie : " ^ x)) with
-                | InA a -> let v = Hashtbl.find mem a in
-                            v
+  | ASTId x -> (match (try Hashtbl.find env x with Not_found -> failwith ("Variable non définie : " ^ x)) with
+                | InA a -> (try let v = Hashtbl.find mem a in v
+                            with Not_found -> failwith ("Adresse mémoire introuvable : " ^ string_of_int a))
                 | v -> v)
 
   (* (AND) *)

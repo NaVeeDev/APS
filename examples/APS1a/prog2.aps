@@ -1,0 +1,6 @@
+[VAR compteur int;
+ SET compteur 0;
+ PROC inc [var c:int] [SET c (add c 1)];
+ PROC double_inc [var d:int] [CALL inc (adr d); CALL inc (adr d)];
+ CALL double_inc (adr compteur);
+ ECHO compteur]

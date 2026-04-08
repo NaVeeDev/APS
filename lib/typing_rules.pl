@@ -1,3 +1,4 @@
+trace. 
 
 main :- read(user_input, X), check(X, void).
 
@@ -23,15 +24,15 @@ env0([
 type_check(Env, prog(Cs), void) :- type_check(Env, Cs, void).
 
 % ===== BLOCS =====
-type_check(Env, [Cs], void) :- type_check(Env, Cs, void).
+% type_check(Env, [[Cs]], void) :- type_check(Env, [Cs], void).
 
 
 % ===== SUITE DE COMMANDES =====
-% defs
-type_check(Env, [D|Cs], void) :- type_check(Env, D, Envv), type_check(Envv, Cs, void).
-
 % stats
 type_check(Env, [stat(S)|Cs], void) :- type_check(Env, S, void), type_check(Env, Cs, void).
+
+% defs
+type_check(Env, [D|Cs], void) :- type_check(Env, D, Envv), type_check(Envv, Cs, void).
 
 % end
 type_check(_, [], void).
@@ -53,28 +54,30 @@ type_check(Env, funrec(X, T, Args, E), [(X, ArrowType)|Env]) :-
     type_check(NewEnv, E, T).
 
 % var
-type_check(Env, var(X, int), [(X, int)|Env]).
-type_check(Env, var(X, bool), [(X, bool)|Env]).
+type_check(Env, var(X, int), [(X, ref(int))|Env]).
+type_check(Env, var(X, bool), [(X, ref(bool))|Env]).
 
 % proc
 type_check(Env, proc(X, Args, Cs), [(X, ProcType)|Env]) :- 
-    add_args_to_env(Args, Env, NewEnv),
-    type_check(NewEnv, Cs, void),
-    args_to_arrowtype(Args, void, ProcType).
+    %TODO : le truc avec A en debut de typage
+    argsp_to_arrowtype(Args, ProcType),
+    add_argsp_to_env(Args, Env, NewEnv),
+    type_check(NewEnv, Cs, void).
 
 % procrec
 type_check(Env, procrec(X, Args, Cs), [(X, ProcType)|Env]) :- 
-    args_to_arrowtype(Args, void, ProcType),
-    add_args_to_env(Args, [(X, ProcType)|Env], NewEnv),
+    %TODO : le truc avec A en debut de typage
+    argsp_to_arrowtype(Args, ProcType),
+    add_argsp_to_env(Args, [(X, ProcType)|Env], NewEnv),
     type_check(NewEnv, Cs, void).
 
 
-% ===== INSTRUCTION =====
+% ===== INSTRUCTIONS =====
 % echo
 type_check(Env, echo(X), void) :- type_check(Env, X, int).
 
 % set
-type_check(Env, set(X, E), void) :- member((X,T), Env), type_check(Env, E, T).
+type_check(Env, set(X, E), void) :- member((X,ref(T)), Env), type_check(Env, E, T).
 
 % ifi
 type_check(Env, ifi(E, Cs1, Cs2), void) :- 
@@ -93,12 +96,23 @@ type_check(Env, call(X, Args), void) :-
     funtype_to_args_res(ProcType, ArgsTypes, void),
     check_args(Env, Args, ArgsTypes). 
 
+% ==== PARAMETRES D'APPEL =====
+% ref
+type_check(Env, adr(X), ref(T)) :- member((X, ref(T)), Env).
+
+% val
+type_check(Env, expr(E), T) :- type_check(Env, E, T).
+
 % ===== EXPRESSIONS =====
 % num
 type_check(_, num(_), int).
 
-% id
-type_check(Env, ident(X), T) :- member((X,T),Env).
+% idv
+type_check(Env, ident(X), T) :- 
+    member((X,T), Env).
+
+% idr
+type_check(Env, ident(X), T) :- member((X, ref(T)), Env).
 
 % if
 type_check(Env, if(E1, E2, E3), T) :- type_check(Env, E1, bool), type_check(Env, E2, T), type_check(Env, E3, T).
@@ -127,22 +141,37 @@ type_check(Env, abs(Args, E), ArrowType) :-
 % nb : 
 % \+ = not en prolog
 
-% args_to_arrowtype : converti une liste d'args en fonction
+% args_to_arrowtype : converti une liste d'args en type fonction
 args_to_arrowtype(Args, T, arrow(Stars, T)) :-
     args_to_types(Args, Types),
     types_to_star(Types, Stars).
 
 % args_to_types : extraire les types des args
 args_to_types([], []).
-args_to_types([(_, ArgType) | Args], [ArgType | Rest]) :- args_to_types(Args, Rest).
+args_to_types([arg(_, ArgType) | Args], [ArgType | Rest]) :- args_to_types(Args, Rest).
+
+% add_args_to_env : ajoute les args a l'env -> la fonction A du formulaire 
+add_args_to_env([], Env, Env).
+add_args_to_env([arg(Name, Type) | Args], Env, NewEnv) :- add_args_to_env(Args, [(Name, Type)|Env], NewEnv).
+
+% argsp_to_arrowtype : converti une liste d'args en type arrow
+argsp_to_arrowtype(Args, arrow(Stars, void)) :-
+    argsp_to_types(Args, Types),
+    types_to_star(Types, Stars).
+
+% argsp_to_types : extraire les types des argsp
+argsp_to_types([], []).
+argsp_to_types([argp(_, T) | Args], [T | Ts]) :- argsp_to_types(Args, Ts).
+argsp_to_types([varp(_, T) | Args], [ref(T) | Ts]) :- argsp_to_types(Args, Ts).
+
+% add_argsp_to_env : ajoute les argsp a l'env
+add_argsp_to_env([], Env, Env).
+add_argsp_to_env([argp(X, T) | Rest], Env, NewEnv) :- add_argsp_to_env(Rest, [(X, T) | Env], NewEnv).
+add_argsp_to_env([varp(X, T) | Rest], Env, NewEnv) :- add_argsp_to_env(Rest, [(X, ref(T)) | Env], NewEnv).
 
 % types_to_star : construire un star imbrique
 types_to_star([T], T).
 types_to_star([T1, T2 | Rest], star(T1, StarRest)) :- types_to_star([T2 | Rest], StarRest).
-
-% add_args_to_env : ajoute les args a l'env
-add_args_to_env([], Env, Env).
-add_args_to_env([(Name, Type) | Args], Env, NewEnv) :- add_args_to_env(Args, [(Name, Type)|Env], NewEnv).
 
 % check_args : check que les args ont les bons types
 check_args(_, [], []).
@@ -152,6 +181,14 @@ check_args(Env, [E|Es], [T|Ts]) :- type_check(Env, E, T), check_args(Env, Es, Ts
 funtype_to_args_res(arrow(Arg, Ret), Args, Ret) :-
     flatten_star(Arg, Args).
 
+% proctype_to_argsp_res : converti une procedure en une liste d'args avec un type de retour
+proctype_to_argsp_res(arrow(void, void), []).
+proctype_to_argsp_res(arrow(T, void), [T]).
+
+
 % flatten_star : pour obtenir les types d'un star
 flatten_star(star(T1, T2), [T1|Rest]) :- flatten_star(T2, Rest).
 flatten_star(T, [T]).
+
+% ref
+check_type(_, ref(T), T).

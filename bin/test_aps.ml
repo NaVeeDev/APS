@@ -24,6 +24,9 @@ let l_test_1 = [(testfile_name 1 0, "OK"); (testfile_name 1 1, "OK");
                 (testfile_name 1 12, "OK");(testfile_name 1 13, "KO");
                 (testfile_name 1 14, "KO");(testfile_name 1 15, "KO")]
 
+let l_test_1a = [(testfile_name_1a 0, "OK"); (testfile_name_1a 1, "OK");
+                 (testfile_name_1a 2, "OK"); (testfile_name_1a 3, "OK")]
+
 
 
 let test_prologTerm (l_test : string list) =
@@ -85,5 +88,14 @@ let _ =
   test_typeur l_test_1;
   print_newline ();
   print_endline "- Test de la sémantique\n";
-  test_semantic (fst (List.split l_test_1 ))
+  test_semantic (fst (List.split l_test_1 ));
+
+  Format.printf "========== Tests de APS 1a ==========\n";
+  Format.printf "- Test de PrologTerm\n";
+  test_prologTerm (fst (List.split l_test_1a ));
+  print_endline "- Test du typeur\n";
+  test_typeur l_test_1a;
+  print_newline ();
+  print_endline "- Test de la sémantique\n";
+  test_semantic (fst (List.split l_test_1a ))
 
