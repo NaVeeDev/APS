@@ -1,0 +1,20 @@
+[ PROC fold [f : (int * int -> int), xs : (vec int), var acc : int]
+  [
+    VAR i int;
+    SET i 0;
+    WHILE (lt i (len xs))
+      [
+        SET acc (f acc (nth xs i));
+        SET i (add i 1)
+      ]
+  ];
+  VAR tab (vec int);
+  SET tab (alloc 3);
+  SET (nth tab 0) 3;
+  SET (nth tab 1) 21;
+  SET (nth tab 2) 18;
+  VAR a int;
+  SET a 0;
+  CALL fold [x : int, y : int] (add x y) tab (adr a);
+  ECHO a
+]

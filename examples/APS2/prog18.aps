@@ -1,0 +1,14 @@
+[ CONST s int 3;
+  VAR t (vec int);
+  SET t (alloc s);
+  VAR c int;
+  SET c 0;
+  WHILE (lt c s)
+  [
+    SET (nth t c) c;
+    SET c (add c 1)
+  ];
+  ECHO (nth t 0);
+  ECHO (nth t 1);
+  ECHO (nth t 2)
+]

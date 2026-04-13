@@ -48,8 +48,8 @@ and pp_stat fmt s =
   match s with
   ASTEcho e -> fprintf fmt "echo(%a)" pp_expr e
   | ASTSet (x, e) -> fprintf fmt "set(%a, %a)"  pp_lval x pp_expr e
-  | ASTIfi (e, cs1, cs2) -> fprintf fmt "ifi(%a, [%a], [%a])" pp_expr e pp_cmds cs1 pp_cmds cs2
-  | ASTWhile (e, cs) -> fprintf fmt "while(%a, [%a])" pp_expr e pp_cmds cs
+  | ASTIfi (e, cs1, cs2) -> fprintf fmt "ifi(%a, %a, %a)" pp_expr e pp_cmds cs1 pp_cmds cs2
+  | ASTWhile (e, cs) -> fprintf fmt "while(%a, %a)" pp_expr e pp_cmds cs
   | ASTCall (f, es) -> fprintf fmt "call(%s, [%a])" f pp_exprps es
 
 and pp_lval fmt lv =
@@ -73,8 +73,8 @@ and pp_def fmt d =
     | ASTFun(x, t, args, e) -> fprintf fmt "fun(%s, %a, [%a], %a)" x pp_typee t (pp_lst_cma pp_arg) args pp_expr e
     | ASTFunRec(x, t, args,e) -> fprintf fmt "funrec(%s, %a, [%a], %a)" x pp_typee t (pp_lst_cma pp_arg) args pp_expr e
     | ASTVar(x, t) -> fprintf fmt "var(%s, %a)" x pp_typee t
-    | ASTProc(x, args, cs) -> fprintf fmt "proc(%s, [%a], [%a])" x (pp_lst_cma pp_argp) args pp_cmds cs
-    | ASTProcRec(x, args, cs) -> fprintf fmt "procrec(%s, [%a], [%a])" x (pp_lst_cma pp_argp) args pp_cmds cs
+    | ASTProc(x, args, cs) -> fprintf fmt "proc(%s, [%a], %a)" x (pp_lst_cma pp_argp) args pp_cmds cs
+    | ASTProcRec(x, args, cs) -> fprintf fmt "procrec(%s, [%a], %a)" x (pp_lst_cma pp_argp) args pp_cmds cs
 
 and pp_typee fmt t =
   match t with
