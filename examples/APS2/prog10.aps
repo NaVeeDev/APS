@@ -1,0 +1,1 @@
+[ VAR b (vec bool); SET b (alloc 2); SET (nth b 0) 42 ]

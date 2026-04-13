@@ -25,10 +25,14 @@ and expr =
   | ASTOr of expr * expr
   | ASTApp of expr * expr list  
   | ASTAbs of arg list * expr
+  | ASTAlloc of expr 
+  | ASTLen of expr
+  | ASTNth of expr * expr
+  | ASTVSet of expr * expr * expr
 
 and stat =
     ASTEcho of expr
-  | ASTSet of string * expr
+  | ASTSet of lval * expr
   | ASTIfi of expr * cmds list * cmds list
   | ASTWhile of expr * cmds list
   | ASTCall of string * exprp list
@@ -36,6 +40,10 @@ and stat =
 and cmds =
     ASTStat of stat
   | ASTDef of def
+
+and lval = 
+  | ASTLId of string
+  | ASTLNth of lval * expr
 
 and def =
     ASTConst of string * typee * expr
@@ -49,8 +57,5 @@ and typee =
     ASTInt
   | ASTBool
   | ASTArrow of typee list * typee
-
-
-
-
+  | ASTVec of typee
 

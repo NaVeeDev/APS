@@ -1,0 +1,6 @@
+[ VAR t (vec int);
+  SET t (alloc 2);
+  PROC init [var a:(vec int), i:int, v:int]
+    [ SET (nth a i) v ];
+  CALL init (adr t) 1 42;
+  ECHO (nth t 1) ]

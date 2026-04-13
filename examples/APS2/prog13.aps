@@ -1,0 +1,3 @@
+[ VAR t (vec int);
+  PROC p [var x:int] [ SET x 1 ];
+  CALL p (adr t) ]

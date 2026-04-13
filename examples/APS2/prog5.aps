@@ -1,0 +1,5 @@
+[ PROC f [t:(vec int)] 
+    [ ECHO (len t) ];
+  VAR v (vec int);
+  SET v (alloc 7);
+  CALL f v ]

@@ -18,7 +18,7 @@ open Ast
 %token SEMI COLON COMMA STAR ARROW
 %token CONST FUN REC VAR PROC
 %token ECHO SET IFi WHILE CALL
-%token IF AND OR BOOL INT VARP ADR
+%token IF AND OR BOOL INT VEC VARP ADR ALLOC LEN NTH VSET
 
 %type <Ast.expr> expr
 %type <Ast.expr list> exprs
@@ -64,6 +64,7 @@ typee:
   INT                   { ASTInt }
 | BOOL                  { ASTBool }
 | LPAR types ARROW typee RPAR { ASTArrow($2, $4) }
+| LPAR VEC typee RPAR { ASTVec($3) }  
 ;
 
 types:
@@ -89,15 +90,21 @@ argp:
 
 stat:
   ECHO expr             { ASTEcho($2) }
-| SET IDENT expr        { ASTSet($2, $3) }
+| SET lval expr         { ASTSet($2, $3) }
 | IFi expr block block  { ASTIfi($2, $3, $4) }
 | WHILE expr block      { ASTWhile($2, $3) }
-| CALL IDENT exprsp      { ASTCall($2, $3) }
+| CALL IDENT exprsp     { ASTCall($2, $3) }
+;
+
+lval:
+  IDENT                 { ASTLId($1) }
+| LPAR NTH lval expr RPAR {ASTLNth($3, $4) }
 ;
 
 exprsp:
   exprp                   { [$1] }
-| exprp exprsp      { $1::$2 }
+| exprp exprsp          { $1::$2 }
+;
 
 exprp:
   expr                   { ASTExpr($1) }
@@ -112,6 +119,10 @@ expr:
 | LPAR OR expr expr RPAR { ASTOr($3, $4) }
 | LPAR expr exprs RPAR  { ASTApp($2, $3) }
 | LBRA args RBRA expr   { ASTAbs($2, $4) }
+| LPAR ALLOC expr RPAR  { ASTAlloc($3) }
+| LPAR LEN expr RPAR    { ASTLen($3) }
+| LPAR NTH expr expr RPAR { ASTNth($3, $4) }
+| LPAR VSET expr expr expr RPAR { ASTVSet($3, $4, $5) }
 ;
 
 exprs :

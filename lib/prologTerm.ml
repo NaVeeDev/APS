@@ -38,14 +38,24 @@ and pp_expr fmt e =
     | ASTOr(e1, e2) -> fprintf fmt "or(%a, %a)" pp_expr e1 pp_expr e2
     | ASTApp(e, es) -> fprintf fmt "app(%a,[%a])" pp_expr  e  pp_exprs es
     | ASTAbs(args, e) -> fprintf fmt "abs([%a], %a)" (pp_lst_cma pp_arg) args pp_expr e
+    | ASTAlloc e -> fprintf fmt "alloc(%a)" pp_expr e
+    | ASTLen e -> fprintf fmt "len(%a)" pp_expr e
+    | ASTNth(e1, e2) -> fprintf fmt "nth(%a, %a)" pp_expr e1 pp_expr e2
+    | ASTVSet(e1, e2, e3) -> fprintf fmt "vset(%a, %a, %a)" pp_expr e1 pp_expr e2 pp_expr e3
+    
 and pp_exprs fmt es = pp_lst_cma pp_expr fmt es
 and pp_stat fmt s =
   match s with
   ASTEcho e -> fprintf fmt "echo(%a)" pp_expr e
-  | ASTSet (x, e) -> fprintf fmt "set(%s, %a)"  x pp_expr e
+  | ASTSet (x, e) -> fprintf fmt "set(%a, %a)"  pp_lval x pp_expr e
   | ASTIfi (e, cs1, cs2) -> fprintf fmt "ifi(%a, [%a], [%a])" pp_expr e pp_cmds cs1 pp_cmds cs2
   | ASTWhile (e, cs) -> fprintf fmt "while(%a, [%a])" pp_expr e pp_cmds cs
   | ASTCall (f, es) -> fprintf fmt "call(%s, [%a])" f pp_exprps es
+
+and pp_lval fmt lv =
+  match lv with
+  | ASTLId x -> fprintf fmt "lval_id(%s)" x
+  | ASTLNth (lv, e) -> fprintf fmt "lval_nth(%a, %a)" pp_lval lv pp_expr e
 
 and pp_cmd fmt c =
   match c with
@@ -71,6 +81,7 @@ and pp_typee fmt t =
     ASTInt -> fprintf fmt "int"
   | ASTBool -> fprintf fmt "bool"
   | ASTArrow(args, res) -> fprintf fmt "arrow(%a, %a)" pp_star args pp_typee res
+  | ASTVec t -> fprintf fmt "vec(%a)" pp_typee t
 
   and pp_star fmt ts =
   match ts with

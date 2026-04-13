@@ -1,0 +1,1 @@
+[ VAR t (vec int); SET t (alloc 2); SET (nth t true) 10 ]

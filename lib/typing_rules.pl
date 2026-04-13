@@ -54,8 +54,7 @@ type_check(Env, funrec(X, T, Args, E), [(X, ArrowType)|Env]) :-
     type_check(NewEnv, E, T).
 
 % var
-type_check(Env, var(X, int), [(X, ref(int))|Env]).
-type_check(Env, var(X, bool), [(X, ref(bool))|Env]).
+type_check(Env, var(X, T), [(X, ref(T))|Env]).
 
 % proc
 type_check(Env, proc(X, Args, Cs), [(X, ProcType)|Env]) :- 
@@ -77,7 +76,9 @@ type_check(Env, procrec(X, Args, Cs), [(X, ProcType)|Env]) :-
 type_check(Env, echo(X), void) :- type_check(Env, X, int).
 
 % set
-type_check(Env, set(X, E), void) :- member((X,ref(T)), Env), type_check(Env, E, T).
+type_check(Env, set(LV, E), void) :-
+    type_check_lval(Env, LV, T),
+    type_check(Env, E, T).
 
 % ifi
 type_check(Env, ifi(E, Cs1, Cs2), void) :- 
@@ -135,6 +136,17 @@ type_check(Env, abs(Args, E), ArrowType) :-
     type_check(NewEnv, E, T),
     args_to_arrowtype(Args, T, ArrowType).
 
+% alloc
+type_check(Env, alloc(E), vec(_)) :- type_check(Env, E, int).
+
+% nth 
+type_check(Env, nth(E1, E2), T) :- type_check(Env, E1, vec(T)), type_check(Env, E2, int).
+
+% len
+type_check(Env, len(E), int) :- type_check(Env, E, vec(_)).
+
+% vset
+type_check(Env, vset(E1, E2, E3), vec(T)) :- type_check(Env, E1, vec(T)), type_check(Env, E2, int), type_check(Env, E3, T).
 
 % ===== FONCTIONS AUXILLIAIRES ======
 
@@ -192,3 +204,9 @@ flatten_star(T, [T]).
 
 % ref
 check_type(_, ref(T), T).
+
+% type_check_lval : verfie si l'argument est un lvalue comme spécifié dans aps2
+type_check_lval(Env, lval_id(X), T) :- member((X, ref(T)), Env). 
+type_check_lval(Env, lval_nth(LV, Idx), T) :- 
+    type_check_lval(Env, LV, vec(T)), 
+    type_check(Env, Idx, int).

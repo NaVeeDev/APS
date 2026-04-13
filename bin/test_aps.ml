@@ -27,6 +27,15 @@ let l_test_1 = [(testfile_name 1 0, "OK"); (testfile_name 1 1, "OK");
 let l_test_1a = [(testfile_name_1a 0, "OK"); (testfile_name_1a 1, "OK");
                  (testfile_name_1a 2, "OK"); (testfile_name_1a 3, "OK")]
 
+let l_test_2 = [(testfile_name 2 0, "OK"); (testfile_name 2 1, "OK");
+                (testfile_name 2 2, "OK"); (testfile_name 2 3, "OK");
+                (testfile_name 2 4, "OK"); (testfile_name 2 5, "OK");
+                (testfile_name 2 6, "OK"); (testfile_name 2 7, "OK");
+                (testfile_name 2 8, "KO"); (testfile_name 2 9, "KO");
+                (testfile_name 2 10, "KO");(testfile_name 2 11, "KO");
+                (testfile_name 2 12, "KO");(testfile_name 2 13, "KO");
+                (testfile_name 2 14, "OK");(testfile_name 2 15, "OK")]
+
 
 
 let test_prologTerm (l_test : string list) =
@@ -97,5 +106,14 @@ let _ =
   test_typeur l_test_1a;
   print_newline ();
   print_endline "- Test de la sémantique\n";
-  test_semantic (fst (List.split l_test_1a ))
+  test_semantic (fst (List.split l_test_1a ));
+
+  Format.printf "========== Tests de APS 2 ==========\n";
+  Format.printf "- Test de PrologTerm\n";
+  test_prologTerm (fst (List.split l_test_2 ));
+  print_endline "- Test du typeur\n";
+  test_typeur l_test_2;
+  print_newline ();
+  print_endline "- Test de la sémantique\n";
+  test_semantic (fst (List.split l_test_2 ))
 
