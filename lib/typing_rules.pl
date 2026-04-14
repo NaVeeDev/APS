@@ -58,14 +58,12 @@ type_check(Env, var(X, T), [(X, ref(T))|Env]).
 
 % proc
 type_check(Env, proc(X, Args, Cs), [(X, ProcType)|Env]) :- 
-    %TODO : le truc avec A en debut de typage
     argsp_to_arrowtype(Args, ProcType),
     add_argsp_to_env(Args, Env, NewEnv),
     type_check(NewEnv, Cs, void).
 
 % procrec
 type_check(Env, procrec(X, Args, Cs), [(X, ProcType)|Env]) :- 
-    %TODO : le truc avec A en debut de typage
     argsp_to_arrowtype(Args, ProcType),
     add_argsp_to_env(Args, [(X, ProcType)|Env], NewEnv),
     type_check(NewEnv, Cs, void).

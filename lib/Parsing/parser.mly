@@ -20,6 +20,7 @@ open Ast
 %token ECHO SET IFi WHILE CALL
 %token IF AND OR BOOL INT VEC VARP ADR ALLOC LEN NTH VSET
 
+// Pour vérifier si %type manquant : menhir --explain lib/Parsing/parser.mly
 %type <Ast.expr> expr
 %type <Ast.expr list> exprs
 %type <Ast.exprp> exprp
@@ -35,6 +36,7 @@ open Ast
 %type <(string * Ast.typee) list> args
 %type <Ast.argp> argp
 %type <Ast.argp list> argsp
+%type <Ast.lval> lval
 
 
 %start prog
@@ -53,18 +55,19 @@ cmds:
 ;
 
 def:
-  CONST IDENT typee expr { ASTConst($2, $3, $4) }
-| FUN IDENT typee LBRA args RBRA expr { ASTFun($2, $3, $5, $7) }
+  CONST IDENT typee expr                  { ASTConst($2, $3, $4) }
+| FUN IDENT typee LBRA args RBRA expr     { ASTFun($2, $3, $5, $7) }
 | FUN REC IDENT typee LBRA args RBRA expr { ASTFunRec($3, $4, $6, $8) }
-| VAR IDENT typee       { ASTVar($2, $3) }
-| PROC IDENT LBRA argsp RBRA block { ASTProc($2, $4, $6) }
-| PROC REC IDENT LBRA argsp RBRA block { ASTProcRec($3, $5, $7) }
+| VAR IDENT typee                         { ASTVar($2, $3) }
+| PROC IDENT LBRA argsp RBRA block        { ASTProc($2, $4, $6) }
+| PROC REC IDENT LBRA argsp RBRA block    { ASTProcRec($3, $5, $7) }
+;
 
 typee:
-  INT                   { ASTInt }
-| BOOL                  { ASTBool }
+  INT                         { ASTInt }
+| BOOL                        { ASTBool }
 | LPAR types ARROW typee RPAR { ASTArrow($2, $4) }
-| LPAR VEC typee RPAR { ASTVec($3) }  
+| LPAR VEC typee RPAR         { ASTVec($3) }  
 ;
 
 types:
@@ -75,13 +78,15 @@ types:
 args:
   arg                   { [$1] }
 | arg COMMA args        { $1::$3 }
+;
 
-arg:
-  IDENT COLON typee      { ($1, $3) }
+arg: IDENT COLON typee  { ($1, $3) }
+;
 
 argsp:
-  argp                   { [$1] }
+  argp                  { [$1] }
 | argp COMMA argsp      { $1::$3 }
+;
 
 argp:
   IDENT COLON typee      { ASTArg($1, $3) }
@@ -97,31 +102,31 @@ stat:
 ;
 
 lval:
-  IDENT                 { ASTLId($1) }
-| LPAR NTH lval expr RPAR {ASTLNth($3, $4) }
+  IDENT                   { ASTLId($1) }
+| LPAR NTH lval expr RPAR { ASTLNth($3, $4) }
 ;
 
 exprsp:
-  exprp                   { [$1] }
+  exprp                 { [$1] }
 | exprp exprsp          { $1::$2 }
 ;
 
 exprp:
-  expr                   { ASTExpr($1) }
+  expr                  { ASTExpr($1) }
 | LPAR ADR IDENT RPAR   { ASTAdr($3) }
 ;
 
 expr:
-  NUM                   { ASTNum($1) }
-| IDENT                 { ASTId($1) }
-| LPAR IF expr expr expr RPAR { ASTIf($3, $4, $5) }
-| LPAR AND expr expr RPAR { ASTAnd($3, $4) }
-| LPAR OR expr expr RPAR { ASTOr($3, $4) }
-| LPAR expr exprs RPAR  { ASTApp($2, $3) }
-| LBRA args RBRA expr   { ASTAbs($2, $4) }
-| LPAR ALLOC expr RPAR  { ASTAlloc($3) }
-| LPAR LEN expr RPAR    { ASTLen($3) }
-| LPAR NTH expr expr RPAR { ASTNth($3, $4) }
+  NUM                           { ASTNum($1) }
+| IDENT                         { ASTId($1) }
+| LPAR IF expr expr expr RPAR   { ASTIf($3, $4, $5) }
+| LPAR AND expr expr RPAR       { ASTAnd($3, $4) }
+| LPAR OR expr expr RPAR        { ASTOr($3, $4) }
+| LPAR expr exprs RPAR          { ASTApp($2, $3) }
+| LBRA args RBRA expr           { ASTAbs($2, $4) }
+| LPAR ALLOC expr RPAR          { ASTAlloc($3) }
+| LPAR LEN expr RPAR            { ASTLen($3) }
+| LPAR NTH expr expr RPAR       { ASTNth($3, $4) }
 | LPAR VSET expr expr expr RPAR { ASTVSet($3, $4, $5) }
 ;
 

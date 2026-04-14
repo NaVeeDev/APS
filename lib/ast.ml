@@ -15,7 +15,7 @@ and arg = string * typee
 
 and exprp = 
     ASTExpr of expr
-  | ASTAdr of string (* not sure for string?? *)
+  | ASTAdr of string
 
 and expr =
     ASTNum of int
