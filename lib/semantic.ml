@@ -113,38 +113,39 @@ let init_env () : envT =
 let rec eval_prog (p : cmds list) : unit =
   let env0 = init_env () in
   let mem0 = Hashtbl.create 10 in
-  let (_, _, stack) = eval_block env0 mem0 [] p in
+  let (_, stack) = eval_block env0 mem0 [] p in
   List.iter (fun n -> print_int n; print_newline ()) (List.rev stack)
   
 
 (* APS1 *)
 (* (BLOCK) *)
-and eval_block (env : envT) (mem : memT) (stack : int list) (cmds : cmds list) : envT * memT * int list =
+and eval_block (env : envT) (mem : memT) (stack : stackT) (cmds : cmds list) : memT * stackT =
   match cmds with
-  | [] -> (env, mem, stack)
+  | [] -> (mem, stack)
   | c :: cs -> 
-      let (new_env,_, new_stack) = eval_cmd env mem stack c in
-      eval_block new_env mem new_stack cs
+      let (new_mem, new_stack) = eval_cmd env mem stack c in
+      eval_block env new_mem new_stack cs
 
 
 (* APS0 *)
 (* (CMDS) *)
-and eval_cmd (env : envT) (mem : memT) (stack : int list) (c : cmds) : envT * memT * int list =
+and eval_cmd (env : envT) (mem : memT) (stack : stackT) (c : cmds) : memT * stackT =
   match c with 
   | ASTStat s ->  eval_stat env mem stack s
-  | ASTDef d -> eval_def env mem stack d
+  | ASTDef d -> let (_, new_mem) = eval_def env mem d in
+               (new_mem, stack)
 
 
 (* APS0, APS1, APS2 *)
 (* (STAT) *)
-and eval_stat (env : envT) (mem : memT) (stack : int list) (s : stat) : envT * memT * int list =
+and eval_stat (env : envT) (mem : memT) (stack : stackT) (s : stat) : memT * stackT =
   match s with
 
   (* (SET) *)
   | ASTSet(x,e) -> (let (a, mem') = eval_lval env mem x in
                     let (v, mem_) = eval_expr env mem' e in
                     Hashtbl.replace mem' a v;
-                    (env, mem_, stack))
+                    (mem_, stack))
 
   (* (IF) *)
   | ASTIfi (e, then_block, else_block) -> let (e', mem') = eval_expr env mem e in (match e' with
@@ -161,11 +162,11 @@ and eval_stat (env : envT) (mem : memT) (stack : int list) (s : stat) : envT * m
   | ASTWhile (e, body) -> let (e', mem') = eval_expr env mem e in (match e' with
 
                            (* (LOOP0) *)
-                           | InZ 0 -> (env, mem', stack)
+                           | InZ 0 -> (mem', stack)
 
                             (* (LOOP1) *)
-                           | InZ 1 -> let (new_env, new_mem, new_stack) = eval_block env mem' stack body in
-                                      eval_stat new_env new_mem new_stack (ASTWhile (e, body))
+                           | InZ 1 -> let (new_mem, new_stack) = eval_block env mem' stack body in
+                                      eval_stat env new_mem new_stack (ASTWhile (e, body))
                           
                            | _ -> failwith "Condition d'un while doit être 0 ou 1 (While)")
 
@@ -175,22 +176,22 @@ and eval_stat (env : envT) (mem : memT) (stack : int list) (s : stat) : envT * m
                           | InP (cmds, params, env') -> let values = List.map (fun arg -> eval_exprp env mem arg) args in
                                                         let new_env = Hashtbl.copy env' in
                                                         List.iter2 (fun param value -> Hashtbl.add new_env param value) params values;
-                                                        let (_, new_mem, new_stack) = eval_block new_env mem stack cmds in
-                                                        (env, new_mem, new_stack)
+                                                        let (new_mem, new_stack) = eval_block new_env mem stack cmds in
+                                                        (new_mem, new_stack)
 
                           (* (CALLR) *)
                           | InPR (cmds, params, env') -> let values = List.map (fun arg -> eval_exprp env mem arg) args in
                                                          let new_env = Hashtbl.copy env' in
                                                          List.iter2 (fun param value -> Hashtbl.add new_env param value) params values;
                                                          Hashtbl.add new_env f (InPR(cmds, params, env'));
-                                                         let (_, new_mem, new_stack) = eval_block new_env mem stack cmds in
-                                                         (env, new_mem, new_stack)
+                                                         let (new_mem, new_stack) = eval_block new_env mem stack cmds in
+                                                         (new_mem, new_stack)
 
                           | _ -> failwith (f ^ " n'est pas une procédure")) with Not_found -> failwith (f ^" n'est pas défini"))
 
   (* (ECHO) *)
   | ASTEcho e -> let (e', mem') = eval_expr env mem e in  (match e' with
-                   | InZ n -> (env, mem', n :: stack)
+                   | InZ n -> (mem', n :: stack)
                    | _ -> failwith "Echo d'une valeur non entière")
 
 
@@ -219,28 +220,28 @@ and eval_lval (env : envT) (mem : memT) (lv : lval) : int * memT =
 
 (* APS0, AP1, APS2 *)
 (* (DEF) *)
-and eval_def (env : envT) (mem : memT) (stack : int list) (d : def) : envT * memT * int list =
+and eval_def (env : envT) (mem : memT) (d : def) : envT * memT =
   match d with
 
   (* (CONST) *)
-  | ASTConst (x, _, e) -> let (e', mem') = eval_expr env mem e in Hashtbl.add env x e'; (env, mem', stack)
+  | ASTConst (x, _, e) -> let (e', mem') = eval_expr env mem e in Hashtbl.add env x e'; (env, mem')
 
   (* (FUN) *)
-  | ASTFun (f, _, args, e) -> Hashtbl.add env f (InF(e, List.map (fst) args, (Hashtbl.copy env))); (env, mem, stack)
+  | ASTFun (f, _, args, e) -> Hashtbl.add env f (InF(e, List.map (fst) args, (Hashtbl.copy env))); (env, mem)
 
   (* (FUNREC) *)
-  | ASTFunRec (fr, _ , args, e) -> Hashtbl.add env fr (InFR(e, fr, List.map (fst) args, (Hashtbl.copy env))); (env, mem, stack)
+  | ASTFunRec (fr, _ , args, e) -> Hashtbl.add env fr (InFR(e, fr, List.map (fst) args, (Hashtbl.copy env))); (env, mem)
 
   (* (VAR) *)
   | ASTVar (x,_) -> let (a, sigma') = alloc mem in 
                     Hashtbl.add env x (InA a);
-                    (env, sigma', stack)
+                    (env, sigma')
                 
   (* (PROC) *)
-  | ASTProc (p, args, cmds) -> let params = List.map (function ASTArg(x,_) -> x | ASTVarp(x,_) -> x) args in Hashtbl.add env p (InP(cmds, params, (Hashtbl.copy env))); (env, mem, stack)
+  | ASTProc (p, args, cmds) -> let params = List.map (function ASTArg(x,_) -> x | ASTVarp(x,_) -> x) args in Hashtbl.add env p (InP(cmds, params, (Hashtbl.copy env))); (env, mem)
 
   (* (PROCREC) *)
-  | ASTProcRec (pr, args, cmds) -> let params = List.map (function ASTArg(x,_) -> x | ASTVarp(x,_) -> x) args in Hashtbl.add env pr (InPR(cmds, params, (Hashtbl.copy env))); (env, mem, stack)
+  | ASTProcRec (pr, args, cmds) -> let params = List.map (function ASTArg(x,_) -> x | ASTVarp(x,_) -> x) args in Hashtbl.add env pr (InPR(cmds, params, (Hashtbl.copy env))); (env, mem)
 
 
 (* APS1a *)
