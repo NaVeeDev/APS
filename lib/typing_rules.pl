@@ -1,8 +1,6 @@
-trace. 
-
 main :- read(user_input, X), check(X, void).
 
-check(Expr, T) :- env0(Env), (type_check(Env, Expr, T) -> write("OK\n"); write("KO\n")).
+check(Expr, T) :- env0(Env), (type_check_prog(Env, Expr, T) -> write("OK\n"); write("KO\n")).
 
 % ===== CONTEXTE INITIAL =====
 
@@ -21,130 +19,146 @@ env0([
 
 % ===== PROGRAMMES =====
 % prog
-type_check(Env, prog(Cs), void) :- type_check(Env, Cs, void).
+type_check_prog(Env, prog(Cs), void) :- type_check_bloc(Env, Cs, void).
 
 % ===== BLOCS =====
-% type_check(Env, [[Cs]], void) :- type_check(Env, [Cs], void).
+type_check_bloc(Env, Cs, void) :- type_check_cmds(Env, Cs, void).
 
 
 % ===== SUITE DE COMMANDES =====
 % stats
-type_check(Env, [stat(S)|Cs], void) :- type_check(Env, S, void), type_check(Env, Cs, void).
+type_check_cmds(Env, [stat(S)|Cs], void) :- 
+    type_check_stat(Env, S, void),
+    type_check_cmds(Env, Cs, void).
 
 % defs
-type_check(Env, [D|Cs], void) :- type_check(Env, D, Envv), type_check(Envv, Cs, void).
+type_check_cmds(Env, [D|Cs], void) :- 
+    type_check_def(Env, D, Envv),
+    type_check_cmds(Envv, Cs, void).
 
 % end
-type_check(_, [], void).
+type_check_cmds(_, [], void).
 
 % ===== DEFINITIONS =====
 % const
-type_check(Env, const(X, T, E), [(X,T)|Env]) :- type_check(Env, E, T).
+type_check_def(Env, const(X, T, E), [(X,T)|Env]) :- type_check_expr(Env, E, T).
 
 % fun
-type_check(Env, fun(X, T, Args, E), [(X, ArrowType)|Env]) :-
+type_check_def(Env, fun(X, T, Args, E), [(X, ArrowType)|Env]) :-
     add_args_to_env(Args, Env, NewEnv),
-    type_check(NewEnv, E, T),
+    type_check_expr(NewEnv, E, T),
     args_to_arrowtype(Args, T, ArrowType).
 
 % funrec
-type_check(Env, funrec(X, T, Args, E), [(X, ArrowType)|Env]) :-
+type_check_def(Env, funrec(X, T, Args, E), [(X, ArrowType)|Env]) :-
     args_to_arrowtype(Args, T, ArrowType),
     add_args_to_env(Args, [(X, ArrowType)|Env], NewEnv),
-    type_check(NewEnv, E, T).
+    type_check_expr(NewEnv, E, T).
 
 % var
-type_check(Env, var(X, T), [(X, ref(T))|Env]).
+type_check_def(Env, var(X, T), [(X, ref(T))|Env]).
 
 % proc
-type_check(Env, proc(X, Args, Cs), [(X, ProcType)|Env]) :- 
+type_check_def(Env, proc(X, Args, Cs), [(X, ProcType)|Env]) :- 
     argsp_to_arrowtype(Args, ProcType),
     add_argsp_to_env(Args, Env, NewEnv),
-    type_check(NewEnv, Cs, void).
+    type_check_cmds(NewEnv, Cs, void).
 
 % procrec
-type_check(Env, procrec(X, Args, Cs), [(X, ProcType)|Env]) :- 
+type_check_def(Env, procrec(X, Args, Cs), [(X, ProcType)|Env]) :- 
     argsp_to_arrowtype(Args, ProcType),
     add_argsp_to_env(Args, [(X, ProcType)|Env], NewEnv),
-    type_check(NewEnv, Cs, void).
+    type_check_cmds(NewEnv, Cs, void).
 
 
 % ===== INSTRUCTIONS =====
 % echo
-type_check(Env, echo(X), void) :- type_check(Env, X, int).
+type_check_stat(Env, echo(X), void) :- type_check_expr(Env, X, int).
 
 % set
-type_check(Env, set(LV, E), void) :-
+type_check_stat(Env, set(LV, E), void) :-
     type_check_lval(Env, LV, T),
-    type_check(Env, E, T).
+    type_check_expr(Env, E, T).
 
 % ifi
-type_check(Env, ifi(E, Cs1, Cs2), void) :- 
-    type_check(Env, E, bool),
-    type_check(Env, Cs1, void),
-    type_check(Env, Cs2, void).
+type_check_stat(Env, ifi(E, Cs1, Cs2), void) :- 
+    type_check_expr(Env, E, bool),
+    type_check_cmds(Env, Cs1, void),
+    type_check_cmds(Env, Cs2, void).
 
 % while
-type_check(Env, while(E, Cs), void) :- 
-    type_check(Env, E, bool),
-    type_check(Env, Cs, void).
+type_check_stat(Env, while(E, Cs), void) :- 
+    type_check_expr(Env, E, bool),
+    type_check_cmds(Env, Cs, void).
 
 % call
-type_check(Env, call(X, Args), void) :-
+type_check_stat(Env, call(X, Args), void) :-
     member((X, ProcType), Env),
     funtype_to_args_res(ProcType, ArgsTypes, void),
-    check_args(Env, Args, ArgsTypes). 
+    check_args_expar(Env, Args, ArgsTypes). 
 
 % ==== PARAMETRES D'APPEL =====
 % ref
-type_check(Env, adr(X), ref(T)) :- member((X, ref(T)), Env).
+type_check_expar(Env, adr(X), ref(T)) :- member((X, ref(T)), Env).
 
 % val
-type_check(Env, expr(E), T) :- type_check(Env, E, T).
+type_check_expar(Env, expr(E), T) :- type_check_expr(Env, E, T).
 
 % ===== EXPRESSIONS =====
 % num
-type_check(_, num(_), int).
+type_check_expr(_, num(_), int).
 
 % idv
-type_check(Env, ident(X), T) :- 
+type_check_expr(Env, ident(X), T) :- 
     member((X,T), Env).
 
 % idr
-type_check(Env, ident(X), T) :- member((X, ref(T)), Env).
+type_check_expr(Env, ident(X), T) :- member((X, ref(T)), Env).
 
 % if
-type_check(Env, if(E1, E2, E3), T) :- type_check(Env, E1, bool), type_check(Env, E2, T), type_check(Env, E3, T).
+type_check_expr(Env, if(E1, E2, E3), T) :-
+    type_check_expr(Env, E1, bool),
+    type_check_expr(Env, E2, T),
+    type_check_expr(Env, E3, T).
 
 % and
-type_check(Env, and(E1, E2), bool) :- type_check(Env, E1, bool), type_check(Env, E2, bool).
+type_check_expr(Env, and(E1, E2), bool) :- 
+    type_check_expr(Env, E1, bool),
+    type_check_expr(Env, E2, bool).
 
 % or 
-type_check(Env, or(E1, E2), bool) :- type_check(Env, E1, bool), type_check(Env, E2, bool).
+type_check_expr(Env, or(E1, E2), bool) :- 
+    type_check_expr(Env, E1, bool),
+    type_check_expr(Env, E2, bool).
 
 % app
-type_check(Env, app(E, Args), T) :- 
-    type_check(Env, E, FunType),
+type_check_expr(Env, app(E, Args), T) :- 
+    type_check_expr(Env, E, FunType),
     funtype_to_args_res(FunType, ArgsTypes, T),
     check_args(Env, Args, ArgsTypes).
 
 % abs
-type_check(Env, abs(Args, E), ArrowType) :-
+type_check_expr(Env, abs(Args, E), ArrowType) :-
     add_args_to_env(Args, Env, NewEnv),
-    type_check(NewEnv, E, T),
+    type_check_expr(NewEnv, E, T),
     args_to_arrowtype(Args, T, ArrowType).
 
 % alloc
-type_check(Env, alloc(E), vec(_)) :- type_check(Env, E, int).
+type_check_expr(Env, alloc(E), vec(_)) :- type_check_expr(Env, E, int).
 
 % nth 
-type_check(Env, nth(E1, E2), T) :- type_check(Env, E1, vec(T)), type_check(Env, E2, int).
+type_check_expr(Env, nth(E1, E2), T) :- 
+    type_check_expr(Env, E1, vec(T)), 
+    type_check_expr(Env, E2, int).
 
 % len
-type_check(Env, len(E), int) :- type_check(Env, E, vec(_)).
+type_check_expr(Env, len(E), int) :- type_check_expr(Env, E, vec(_)).
 
 % vset
-type_check(Env, vset(E1, E2, E3), vec(T)) :- type_check(Env, E1, vec(T)), type_check(Env, E2, int), type_check(Env, E3, T).
+type_check_expr(Env, vset(E1, E2, E3), vec(T)) :- 
+    type_check_expr(Env, E1, vec(T)), 
+    type_check_expr(Env, E2, int), 
+    type_check_expr(Env, E3, T).
 
 % ===== FONCTIONS AUXILLIAIRES ======
 
@@ -185,7 +199,16 @@ types_to_star([T1, T2 | Rest], star(T1, StarRest)) :- types_to_star([T2 | Rest],
 
 % check_args : check que les args ont les bons types
 check_args(_, [], []).
-check_args(Env, [E|Es], [T|Ts]) :- type_check(Env, E, T), check_args(Env, Es, Ts).
+check_args(Env, [E|Es], [T|Ts]) :- 
+    type_check_expr(Env, E, T),
+    check_args(Env, Es, Ts).
+
+% chech_args_expar : check que les args d'un call ont les bons types
+check_args_expar(_, [], []).
+check_args_expar(Env, [E|Es], [T|Ts]) :- 
+    type_check_expar(Env, E, T),
+    check_args_expar(Env, Es, Ts).
+
 
 % arrowtype_to_args converti une fonction en une liste d'args et type de retour
 funtype_to_args_res(arrow(Arg, Ret), Args, Ret) :-
@@ -207,4 +230,4 @@ check_type(_, ref(T), T).
 type_check_lval(Env, lval_id(X), T) :- member((X, ref(T)), Env). 
 type_check_lval(Env, lval_nth(LV, Idx), T) :- 
     type_check_lval(Env, LV, vec(T)), 
-    type_check(Env, Idx, int).
+    type_check_expr(Env, Idx, int).
