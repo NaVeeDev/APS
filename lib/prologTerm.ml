@@ -61,6 +61,7 @@ and pp_cmd fmt c =
   match c with
   ASTStat s -> fprintf fmt "stat(%a)" pp_stat s
   | ASTDef d -> fprintf fmt "%a" pp_def d
+  | ASTReturn e -> fprintf fmt "return(%a)" pp_expr e
 
 and pp_cmds fmt cmds =
   match cmds with
@@ -75,6 +76,8 @@ and pp_def fmt d =
     | ASTVar(x, t) -> fprintf fmt "var(%s, %a)" x pp_typee t
     | ASTProc(x, args, cs) -> fprintf fmt "proc(%s, [%a], %a)" x (pp_lst_cma pp_argp) args pp_cmds cs
     | ASTProcRec(x, args, cs) -> fprintf fmt "procrec(%s, [%a], %a)" x (pp_lst_cma pp_argp) args pp_cmds cs
+    | ASTFunR(x,t, args, cs) -> fprintf fmt "funr(%s, %a, [%a], %a)" x pp_typee t (pp_lst_cma pp_arg) args pp_cmds cs
+    | ASTFunRecR(x,t,args,cs) -> fprintf fmt "funrecr(%s, %a, [%a], %a)" x pp_typee t (pp_lst_cma pp_arg) args pp_cmds cs
 
 and pp_typee fmt t =
   match t with

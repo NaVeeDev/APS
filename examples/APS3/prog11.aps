@@ -1,0 +1,2 @@
+[ FUN f int [x:int] [ RETURN true ];
+  ECHO (f 2) ]

@@ -1,0 +1,1 @@
+[ WHILE false [ RETURN 42 ] ]

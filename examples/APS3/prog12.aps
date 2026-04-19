@@ -1,0 +1,2 @@
+[ PROC p [x:bool] [ RETURN 0 ];
+  ECHO (p true) ]

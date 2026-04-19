@@ -1,0 +1,2 @@
+[ FUN f int [c:bool] [ IF c [ RETURN 1 ] [ RETURN 0 ] ];
+  ECHO (f true) ]

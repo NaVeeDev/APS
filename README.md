@@ -6,7 +6,11 @@ Laura LY (M1 STL - 21500152)
 
 ## Etat du travail
 
-Ce projet recouvre toutes les fonctionnalités de APS0 jusqu'à APS2, ie ce projet implémente l'intégralité d'APS2.
+Ce projet recouvre toutes les fonctionnalités de APS0 jusqu'à APS3, ie ce projet implémente l'intégralité d'APS3.
+
+Il y a séparation entre procédures (peuvent prendre des arguments par référence, le corps doit entièrement être fait d'instructions, le type de retour est void et doit être appelé précédé par le token `CALL` ), fonctions (ne peuvent pas prendre des arguments par reference, le corps doit être fait d'expressions, et le type de retour n'est pas void) et fonctions procédurales (ne peuvent pas prendre des arguments par référence, le corps doit être fait d'instructions, et le type de retour n'est pas void).
+
+Il y détection de code mort. Cette dernière est faite lors du parsing, puisque que les `RETURN` ne peuvent se trouver qu'en fin de bloc. Ainsi, tout code comportant du code mort est rejeté par le parser (voir `examples/APS3/prog3.aps`).
 
 ## Commandes
 
@@ -26,7 +30,7 @@ avec `X` la version d'APS (du test) et `Y` le numéro de fichier correspondants 
 
 Il est possible d'ajouter les options suivantes:
 
-- ```--apsX``` avec `X` pouvant être 0, 1, 1a ou 2, correspondants aux dossiers dans `examples/`. Cette option permet de lancer tous les tests du dossier choisi
+- ```--apsX``` avec `X` pouvant être 0, 1, 1a, 2 ou 3 correspondants aux dossiers dans `examples/`. Cette option permet de lancer tous les tests du dossier choisi
 - ```--semantic``` permet d'afficher uniquement les tests d'évaluation
 - ```--typer``` permet d'afficher uniquement les tests de typage
 - ```--prologTerm``` permet d'afficher uniquement les tests de pretty printer
@@ -35,6 +39,8 @@ Il est possible de combiner plusieurs options. Ainsi:
 > ```dune exec -- tests --semantic --prologTerm --aps0 --aps2```  
 
 affiche les tests d'evaluation et de pretty printer sur les fichiers tests de aps0 et aps2.
+
+Note: Pour les tests du typer, pour faciliter la visualisation, le nom du programme est affiché sur fond vert si le résultat correspond à celui attendu, en rouge sinon, et sur fond noir si il y a erreur à une étape antérieure au typage (lexer ou parser).
 
 ## Difficultés
 

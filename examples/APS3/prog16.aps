@@ -1,0 +1,4 @@
+[ FUN REC fact int [n:int] 
+    [ IF (leq n 1) [ SET x 1 ] 
+                  [ RETURN (mul n (fact (sub n 1))) ] ];
+  ECHO (fact 5) ]

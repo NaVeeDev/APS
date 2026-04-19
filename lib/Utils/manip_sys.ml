@@ -13,11 +13,15 @@ let cmd_typ pl_term =
     run_io (Cmd.(v "swipl" % "-g" % "main" % "-t" %"halt" % typ_path)) |>
     out_string)
 
-let get_prog (fname : string) : Ast.cmds list =
+let get_prog (fname : string) : Ast.cmds list option =
   let ic = open_in fname in
   try
     let lexbuf = Lexing.from_channel ic in
     let p = Parser.prog Lexer.token lexbuf in
-      p
-  with Lexer.Eof ->
-    exit 0
+    close_in ic;
+    Some p
+  with 
+  | Lexer.Eof -> close_in ic; None
+  | Parser.Error -> close_in ic; None
+  | e -> close_in ic; raise e
+

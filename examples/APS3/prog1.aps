@@ -1,0 +1,5 @@
+[ VAR x int; 
+  SET x 0;
+  FUN inc int [y:int] [ SET x (add x 1); RETURN x];
+  ECHO (inc 1);
+  ECHO x ]

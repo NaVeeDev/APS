@@ -18,7 +18,7 @@ open Ast
 %token SEMI COLON COMMA STAR ARROW
 %token CONST FUN REC VAR PROC
 %token ECHO SET IFi WHILE CALL
-%token IF AND OR BOOL INT VEC VARP ADR ALLOC LEN NTH VSET
+%token IF AND OR BOOL INT VEC VARP ADR ALLOC LEN NTH VSET RETURN
 
 // Pour vérifier si %type manquant : menhir --explain lib/Parsing/parser.mly
 %type <Ast.expr> expr
@@ -49,10 +49,15 @@ block: LBRA cmds RBRA   { $2 }
 ;
 
 cmds:
-  stat                  { [ASTStat $1] }
 | def SEMI cmds         { ASTDef $1 :: $3 }
 | stat SEMI cmds        { ASTStat $1 :: $3 }
+| stat                  { [ASTStat $1] }
+| ret                   { $1 }
 ;
+
+ret : RETURN expr           { [ASTReturn($2)] }
+;
+
 
 def:
   CONST IDENT typee expr                  { ASTConst($2, $3, $4) }
@@ -61,6 +66,8 @@ def:
 | VAR IDENT typee                         { ASTVar($2, $3) }
 | PROC IDENT LBRA argsp RBRA block        { ASTProc($2, $4, $6) }
 | PROC REC IDENT LBRA argsp RBRA block    { ASTProcRec($3, $5, $7) }
+| FUN IDENT typee LBRA args RBRA LBRA cmds RBRA { ASTFunR($2, $3, $5, $8) }
+| FUN REC IDENT typee LBRA args RBRA LBRA cmds RBRA { ASTFunRecR($3, $4, $6, $9) }
 ;
 
 typee:

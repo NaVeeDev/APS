@@ -22,19 +22,34 @@ env0([
 type_check_prog(Env, prog(Cs), void) :- type_check_bloc(Env, Cs, void).
 
 % ===== BLOCS =====
-type_check_bloc(Env, Cs, void) :- type_check_cmds(Env, Cs, void).
+type_check_bloc(Env, Cs, T) :- type_check_cmds(Env, Cs, T).
 
 
 % ===== SUITE DE COMMANDES =====
-% stats
-type_check_cmds(Env, [stat(S)|Cs], void) :- 
+type_check_cmds(Env, [stat(S)], T) :-
+    type_check_stat(Env, S, T).
+
+% stat0
+type_check_cmds(Env, [stat(S)|Cs], T) :- 
     type_check_stat(Env, S, void),
-    type_check_cmds(Env, Cs, void).
+    type_check_cmds(Env, Cs, T).
+    
+
+% stat1
+type_check_cmds(Env, [stat(S)|Cs], T) :-
+    T \= void,
+    type_check_stat(Env, S, mix(T, void)),
+    type_check_cmds(Env, Cs, T).
+
 
 % defs
-type_check_cmds(Env, [D|Cs], void) :- 
+type_check_cmds(Env, [D|Cs], T) :- 
     type_check_def(Env, D, Envv),
-    type_check_cmds(Envv, Cs, void).
+    type_check_cmds(Envv, Cs, T).
+
+% return 
+type_check_cmds(Env,[return(E)], T) :- 
+    type_check_expr(Env, E, T).
 
 % end
 type_check_cmds(_, [], void).
@@ -70,6 +85,18 @@ type_check_def(Env, procrec(X, Args, Cs), [(X, ProcType)|Env]) :-
     add_argsp_to_env(Args, [(X, ProcType)|Env], NewEnv),
     type_check_cmds(NewEnv, Cs, void).
 
+% funp
+type_check_def(Env, funr(X, T, Args, Cs), [(X, ArrowType)|Env]) :-
+    args_to_arrowtype(Args, T, ArrowType),
+    add_args_to_env(Args, Env, NewEnv),
+    type_check_bloc(NewEnv, Cs, T).
+
+% funrecp
+type_check_def(Env, funrecr(X, T, Args, Cs), [(X, ArrowType)|Env]) :-
+    args_to_arrowtype(Args, T, ArrowType),
+    add_args_to_env(Args, [(X, ArrowType)|Env], NewEnv),
+    type_check_bloc(NewEnv, Cs, T).
+
 
 % ===== INSTRUCTIONS =====
 % echo
@@ -80,16 +107,43 @@ type_check_stat(Env, set(LV, E), void) :-
     type_check_lval(Env, LV, T),
     type_check_expr(Env, E, T).
 
-% ifi
-type_check_stat(Env, ifi(E, Cs1, Cs2), void) :- 
+% if0
+type_check_stat(Env, ifi(E, Cs1, Cs2), T) :- 
+    type_check_expr(Env, E, bool),
+    type_check_cmds(Env, Cs1, T),
+    type_check_cmds(Env, Cs2, T).
+
+% if1
+type_check_stat(Env, ifi(E, Cs1, Cs2), mix(T, void)) :-
     type_check_expr(Env, E, bool),
     type_check_cmds(Env, Cs1, void),
-    type_check_cmds(Env, Cs2, void).
+    type_check_cmds(Env, Cs2, T).
+
+% if2
+type_check_stat(Env, ifi(E, Cs1, Cs2), mix(T, void)) :-
+    type_check_expr(Env, E, bool),
+    type_check_cmds(Env, Cs1, T),
+    type_check_cmds(Env, Cs2, void). 
 
 % while
-type_check_stat(Env, while(E, Cs), void) :- 
+type_check_stat(Env, while(E,Cs), mix(T,void)) :-
+    type_check_expr(Env, E, bool),
+    type_check_cmds(Env, Cs, mix(T, void)).
+
+type_check_stat(Env, while(E, Cs), mix(T, void)) :- 
+    type_check_expr(Env, E, bool),
+    type_check_cmds(Env, Cs, T).
+
+type_check_stat(Env, while(E, Cs), void) :-
+    type_check_expr(Env, E, bool),
+    type_check_cmds(Env, Cs, mix(void, void)).
+
+
+type_check_stat(Env, while(E, Cs), void) :-
     type_check_expr(Env, E, bool),
     type_check_cmds(Env, Cs, void).
+
+
 
 % call
 type_check_stat(Env, call(X, Args), void) :-
@@ -231,3 +285,4 @@ type_check_lval(Env, lval_id(X), T) :- member((X, ref(T)), Env).
 type_check_lval(Env, lval_nth(LV, Idx), T) :- 
     type_check_lval(Env, LV, vec(T)), 
     type_check_expr(Env, Idx, int).
+

@@ -1,0 +1,6 @@
+[ VAR x int;
+  SET x 0;
+  FUN f int [c:bool]
+    [ IF c [ RETURN 1 ] [ SET x 42 ] ];
+  ECHO (f true);
+  ECHO x ]

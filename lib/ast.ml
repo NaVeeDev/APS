@@ -40,6 +40,7 @@ and stat =
 and cmds =
     ASTStat of stat
   | ASTDef of def
+  | ASTReturn of expr 
 
 and lval = 
   | ASTLId of string
@@ -52,6 +53,8 @@ and def =
   | ASTVar of string * typee
   | ASTProc of string * argp list * cmds list
   | ASTProcRec of string * argp list * cmds list
+  | ASTFunR of string * typee * arg list * cmds list
+  | ASTFunRecR of string * typee * arg list * cmds list
 
 and typee =
     ASTInt

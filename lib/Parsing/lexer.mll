@@ -44,6 +44,7 @@ rule token = parse
   | "len"            { LEN }
   | "nth"            { NTH }
   | "vset"           { VSET }
+  | "RETURN"         { RETURN }
   | ['0'-'9']+('.'['0'-'9'])? as lxm { NUM(int_of_string lxm) }
   | ['a'-'z']['a'-'z''A'-'Z''0'-'9''_']* as lxm { IDENT(lxm) }
   | eof              { raise Eof }

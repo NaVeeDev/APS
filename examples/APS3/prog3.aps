@@ -1,0 +1,2 @@
+[ FUN f int [x:int] [ SET x 0; RETURN 42; SET x 1 ];
+  ECHO (f 2) ]

@@ -1,0 +1,2 @@
+[ FUN proc int [x:int] [ RETURN 0 ];
+  ECHO (proc 5) ]

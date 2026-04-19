@@ -1,0 +1,9 @@
+[ FUN find int [tab:(vec int), l:int] 
+    [ VAR i int; SET i 0;
+      WHILE (lt i l) 
+        [ IF (eq (nth tab i) 0) [ RETURN i ] 
+                                [ SET i (add i 1) ] ];
+      RETURN (sub 0 1) ];
+  VAR t (vec int); SET t (alloc 3); 
+  SET (nth t 0) 1; SET (nth t 1) 0; SET (nth t 2) 2;
+  ECHO (find t 3) ]

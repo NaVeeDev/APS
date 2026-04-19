@@ -1,0 +1,13 @@
+[ FUN first_pos int [tab:(vec int), l:int] 
+    [ VAR i int;
+      SET i 0;
+      WHILE (lt i l) [ IF (eq (nth tab i) 0) [ RETURN i ] 
+                                               [ SET i (add i 1) ]
+      ];
+      RETURN (sub 0 1) ];
+  VAR t (vec int);
+  SET t (alloc 3);
+  SET (nth t 0) 2;
+  SET (nth t 1) 3;
+  SET (nth t 2) 1;
+  ECHO (first_pos t 3) ]

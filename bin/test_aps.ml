@@ -38,55 +38,63 @@ let l_test_2 = [(testfile_name 2 0, "OK"); (testfile_name 2 1, "OK");
                 (testfile_name 2 16, "OK");(testfile_name 2 17, "OK");
                 (testfile_name 2 18, "OK")]
 
+let l_test_3 = [(testfile_name 3 0, "OK"); (testfile_name 3 1, "OK");
+                (testfile_name 3 2, "OK"); (testfile_name 3 3, "OK");
+                (testfile_name 3 4, "KO"); (testfile_name 3 5, "OK");
+                (testfile_name 3 6, "OK"); (testfile_name 3 7, "OK");
+                (testfile_name 3 8, "KO"); (testfile_name 3 9, "OK");
+                (testfile_name 3 10, "KO");(testfile_name 3 11, "KO");
+                (testfile_name 3 12, "KO");(testfile_name 3 13, "KO");
+                (testfile_name 3 14, "KO");(testfile_name 3 15, "KO");
+                (testfile_name 3 16, "KO")]
 
 
 let test_prologTerm (l_test : string list) =
-List.fold_right
-(fun fname _ ->
-  let p = get_prog fname in
-      Format.printf "%s |\t %a\n" fname pp_prog p ;
-
-) l_test ()
+  List.iter (fun fname ->
+    match get_prog fname with
+    | Some p -> Format.printf "%s |\t %a\n" fname pp_prog p
+    | None -> Format.printf "%s |\t Erreur de parsing\n" fname
+  ) l_test
 
 let test_typeur (l_test : (string * string) list ) =
-List.fold_right
-(fun (fname,expected) _ ->
-  let p = get_prog fname  in
-      pp_prog Format.str_formatter p;
-      let s = Format.flush_str_formatter () in
-      match cmd_typ  s with
-      | Ok(s,_) -> let match_ok = (s = expected) in
-                   let green_bg = if match_ok then "\027[42m" else "\027[41m" in
-                   let reset = "\027[0m" in 
-                   Format.printf "%s%s%s |\t Résultat du typeur : %s\t Résultat attendu : %s\n" green_bg fname reset s expected
-      | Error (`Msg m) -> print_endline m
-
-) l_test ()
+  List.iter (fun (fname, expected) ->
+    match get_prog fname with
+    | None -> Format.printf "%s |\t Erreur de parsing\n" fname
+    | Some p ->
+        pp_prog Format.str_formatter p;
+        let s = Format.flush_str_formatter () in
+        match cmd_typ s with
+        | Ok(res,_) ->
+            let match_ok = (res = expected) in
+            let color = if match_ok then "\027[42m" else "\027[41m" in
+            Format.printf "%s%s%s |\t Résultat du typeur : %s\t Résultat attendu : %s\n" color fname "\027[0m" res expected
+        | Error (`Msg m) -> print_endline m
+  ) l_test
 
 let test_semantic (l_test : string list) =
-List.fold_right
-(fun fname _ ->
-  let p = get_prog fname in
-  Format.printf "%s |\t" fname ;
-      pp_prog Format.str_formatter p;
-      let s = Format.flush_str_formatter () in
-      match cmd_typ s with
-      | Ok(res,_) -> 
-          if String.trim res = "OK" then (
-            Format.printf " -> Résultat de l'évaluation : " ;
-            (try 
-              eval_prog p;
-              print_newline ()
-            with e -> Format.printf "Erreur : %s\n\n" (Printexc.to_string e))
-          ) else (
-            Format.printf " -> Skipping evaluation (Typer KO)\n\n"
-          );
-      | Error (`Msg m) -> print_endline m ;
-      print_newline ();
-      ) l_test ()
+  List.iter (fun fname ->
+    match get_prog fname with
+    | None -> Format.printf "%s |\t Erreur de parsing\n" fname
+    | Some p ->
+        Format.printf "%s |\t" fname;
+        pp_prog Format.str_formatter p;
+        let s = Format.flush_str_formatter () in
+        match cmd_typ s with
+        | Ok(res,_) ->
+            if String.trim res = "OK" then (
+              Format.printf " -> Résultat de l'évaluation : ";
+              (try
+                eval_prog p;
+                print_newline ()
+              with e -> Format.printf "Erreur : %s\n\n" (Printexc.to_string e))
+            ) else (
+              Format.printf " -> Skipping evaluation (Typer KO)\n\n"
+            )
+        | Error (`Msg m) -> print_endline m
+  ) l_test
 
 let run_tests aps prolog typer semantic =
-  let aps_testfiles = [("0", l_test_0); ("1", l_test_1); ("1a", l_test_1a); ("2", l_test_2)] in
+  let aps_testfiles = [("0", l_test_0); ("1", l_test_1); ("1a", l_test_1a); ("2", l_test_2); ("3", l_test_3)] in
   let selected = match aps with [] -> aps_testfiles | _ -> List.filter (fun (k,_) -> List.mem k aps) aps_testfiles in
   List.iter (fun (name, typed_tests) ->
     let file_list = fst (List.split typed_tests) in
@@ -115,7 +123,7 @@ let _ =
     | "--prologTerm" :: ll -> prolog := true; parse ll
     | "--typer" :: ll -> typer := true; parse ll
     | "--semantic" :: ll -> semantic := true; parse ll
-    | ("--aps0" | "--aps1" | "--aps1a" | "--aps2") as opt :: ll ->
+    | ("--aps0" | "--aps1" | "--aps1a" | "--aps2" | "--aps3" ) as opt :: ll ->
         let aps = String.sub opt 5 (String.length opt - 5) in
         aps_list := aps :: !aps_list;
         parse ll
