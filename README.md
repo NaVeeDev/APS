@@ -10,7 +10,7 @@ Laura LY (M1 STL - 21500152)
 
 ## Etat du travail
 
-Ce projet recouvre toutes les fonctionnalités de APS0 jusqu'à APS3, ie ce projet implémente l'intégralité d'APS3. (La description complète de chaque version d'APS est disponible dans le dossier `APS\`)
+Ce projet recouvre toutes les fonctionnalités de APS0 jusqu'à APS3, ie ce projet implémente l'intégralité d'APS3. (La description complète de chaque version d'APS est disponible dans le dossier `notes/`)
 
 Il y a séparation entre procédures (peuvent prendre des arguments par référence, le corps doit entièrement être fait d'instructions, le type de retour est void et doit être appelé précédé par le token `CALL` ), fonctions (ne peuvent pas prendre des arguments par reference, le corps doit être fait d'expressions, et le type de retour n'est pas void) et fonctions procédurales (ne peuvent pas prendre des arguments par référence, le corps doit être fait d'instructions, et le type de retour n'est pas void).
 
@@ -57,7 +57,7 @@ Les difficultés rencontrées lors du travail sur ce projet ont tout d'abord ét
 This project was implemented during my first year's second semester of Master STL at Sorbonne Unniversité (2025-2026)
 
 ## Current state
-This project covers all functionalities from APS0 to APS3, which means all of APS3 have been successfully implemented. Details of all APS's versions are available in the `APS\` folder.
+This project covers all functionalities from APS0 to APS3, which means all of APS3 have been successfully implemented. Details of all APS's versions are available in the `notes/` folder.
 
 There is a distinction between procedures (can take arguments by reference, the body must consist entirely of statements, the return type is void, and they must be called preceded by the `CALL` token), functions (cannot take arguments by reference, the body must consist of expressions, and the return type is not void), and procedural functions (cannot take arguments by reference, the body must consist of statements, and the return type is not void).
 
