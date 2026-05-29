@@ -1,7 +1,8 @@
 # Projet d'APS
 
+<sub> English version [here](#aps-project---implementing-a-full-interpreter)!</sub>
+
 Ce projet a été conçu dans le cadre de ma première année de master STL à Sorbonne Université (2025-2026).
-<sub> English version [here](#APS-project--Implementing-a-full-interpreter)!</sub>
 
 #### Etudiante
 
@@ -47,7 +48,9 @@ Note: Pour les tests du typer, pour faciliter la visualisation, le nom du progra
 
 ## Difficultés
 
-Les difficultés rencontrées lors du travail sur ce projet ont tout d'abord été liées au manque de familiarité avec le langage Prolog, notamment le système d'abstraction des variables et d'unification ont ralenti le début du projet. D'autres difficultés ont émané du manque de clarté des erreurs de Menhir lors du parsing, alors que celles-ci étaient souvent liée à une faute de frappe dans le programme (un `;` à la place de `,` par exemple) plutôt qu'une faute d'implémentation de la grammaire. Enfin, bien que le cours sur APS2 ait beaucoup aidé à la compréhension de l'extension, de légères confusions personnelles sur l'utilisation de certains opérateurs ont pu également faire obstacle à une avancée fluide. La lecture de certains exemples dans les annales mises à disposition a pu grandement aider à ce sujet.
+Les difficultés rencontrées lors du travail sur ce projet ont tout d'abord été liées au manque de familiarité avec le langage Prolog, notamment le système d'abstraction des variables et d'unification ont ralenti le début du projet. D'autres difficultés ont émané du manque de clarté des erreurs de Menhir lors du parsing, alors que celles-ci étaient souvent liée à une faute de frappe dans le programme (un `;` à la place de `,` par exemple) plutôt qu'une faute d'implémentation de la grammaire. Enfin, bien que le cours sur APS2 ait beaucoup aidé à la compréhension de l'extension, de légères confusions personnelles sur l'utilisation de certains opérateurs ont pu également faire obstacle à une avancée fluide. La lecture de certains exemples dans les annales mises à disposition a pu grandement aider à ce sujet.  
+
+<br> <br>
 
 
 # APS Project - Implementing a full interpreter
