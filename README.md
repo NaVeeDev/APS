@@ -1,5 +1,7 @@
 # Projet d'APS
 
+### Note/Grade: 100/100
+
 <sub> English version [here](#aps-project---implementing-a-full-interpreter)!</sub>
 
 Ce projet a été conçu dans le cadre de ma première année de master STL à Sorbonne Université (2025-2026).
